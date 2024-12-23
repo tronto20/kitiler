@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import org.jmailen.gradle.kotlinter.tasks.InstallPreCommitHookTask
 
 plugins {

@@ -37,6 +37,7 @@ class ImageService(
         @JvmStatic
         private val logger = KotlinLogging.logger { }
     }
+
     override suspend fun read(
         openOptions: OptionProvider<OpenOption>,
         imageOptions: OptionProvider<ImageOption>,
@@ -46,82 +47,79 @@ class ImageService(
         val featureOption: FeatureOption? = imageOptions.getOrNull()
         val maxSizeOption: MaxSizeOption? = imageOptions.getOrNull()
         val imageSizeOption: ImageSizeOption? = imageOptions.getOrNull()
+        val raster = readableRasterFactory.createReadableRaster(openOptions)
 
-        val maskedImageData = readableRasterFactory.withReadableRaster(openOptions) { raster ->
-
-            val pixelFeature = featureOption?.let {
-                /**
-                 *  1. polygon crs -> image crs
-                 *  2. image crs -> pixel crs
-                 */
-                val polygonCRS = crsFactory.create(featureOption.crsString)
-                val rasterCRSTransform = crsFactory.transformTo(polygonCRS, raster.crs)
-                val polygon = rasterCRSTransform.transformTo(featureOption.polygon)
-                raster.pixelCoordinateTransform.transformTo(polygon)
-            }
-
-            val rasterWindow = Window(0, 0, raster.width, raster.height)
-
+        val pixelFeature = featureOption?.let {
             /**
-             *  window 우선순위
-             *  1. feature
-             *  2. window
-             *  3. whole raster
+             *  1. polygon crs -> image crs
+             *  2. image crs -> pixel crs
              */
-            val window = if (pixelFeature != null) {
-                val pixelEnvelope = pixelFeature.envelopeInternal
-                Window.fromEnvelope(pixelEnvelope)
+            val polygonCRS = crsFactory.create(featureOption.crsString)
+            val rasterCRSTransform = crsFactory.transformTo(polygonCRS, raster.crs)
+            val polygon = rasterCRSTransform.transformTo(featureOption.polygon)
+            raster.pixelCoordinateTransform.transformTo(polygon)
+        }
+
+        val rasterWindow = Window(0, 0, raster.width, raster.height)
+
+        /**
+         *  window 우선순위
+         *  1. feature
+         *  2. window
+         *  3. whole raster
+         */
+        val window = if (pixelFeature != null) {
+            val pixelEnvelope = pixelFeature.envelopeInternal
+            Window.fromEnvelope(pixelEnvelope)
+        } else {
+            val windowOption: WindowOption? = imageOptions.getOrNull()
+            windowOption?.window ?: Window(0, 0, raster.width, raster.height)
+        }
+
+        // window check
+        if (!rasterWindow.toEnvelope().intersects(window.toEnvelope())) {
+            throw ImageOutOfBoundsException(window, rasterWindow)
+        }
+
+        /**
+         *  width, height 우선순위
+         *  1. imageSize
+         *  2. maxSize
+         */
+
+            val (width, height) = if (imageSizeOption != null) {
+            imageSizeOption.width to imageSizeOption.height
+        } else if (maxSizeOption != null) {
+            val maxSize = maxSizeOption.maxSize
+            val widthRatio = maxSize.toDouble() / window.width
+            val heightRatio = maxSize.toDouble() / window.height
+
+            if (widthRatio < heightRatio) {
+                maxSize to (window.height * widthRatio).toInt() + 1
             } else {
-                val windowOption: WindowOption? = imageOptions.getOrNull()
-                windowOption?.window ?: Window(0, 0, raster.width, raster.height)
+                (window.width * heightRatio).toInt() + 1 to maxSize
             }
+        } else {
+            val imageSizeOption: ImageSizeOption = imageOptions.get()
+            imageSizeOption.width to imageSizeOption.height
+        }
 
-            // window check
-            if (!rasterWindow.toEnvelope().intersects(window.toEnvelope())) {
-                throw ImageOutOfBoundsException(window, rasterWindow)
-            }
+        if (width < 10 || height < 10) {
+            throw IllegalParameterException("width or height must be greater than 10.")
+        }
 
-            /**
-             *  width, height 우선순위
-             *  1. imageSize
-             *  2. maxSize
-             */
-
-                val (width, height) = if (imageSizeOption != null) {
-                imageSizeOption.width to imageSizeOption.height
-            } else if (maxSizeOption != null) {
-                val maxSize = maxSizeOption.maxSize
-                val widthRatio = maxSize.toDouble() / window.width
-                val heightRatio = maxSize.toDouble() / window.height
-
-                if (widthRatio < heightRatio) {
-                    maxSize to (window.height * widthRatio).toInt() + 1
-                } else {
-                    (window.width * heightRatio).toInt() + 1 to maxSize
-                }
-            } else {
-                val imageSizeOption: ImageSizeOption = imageOptions.get()
-                imageSizeOption.width to imageSizeOption.height
-            }
-
-            if (width < 10 || height < 10) {
-                throw IllegalParameterException("width or height must be greater than 10.")
-            }
-
-            val imageData = raster.read(window, width, height, bandIndexOption?.bandIndexes)
-            val maskedImageData = if (pixelFeature != null) {
-                val from = pixelFeature.envelopeInternal
-                val transform = AffineTransformationFactory.createFromBaseLines(
-                    CoordinateXY(from.minX, from.minY),
-                    CoordinateXY(from.maxX, from.maxY),
-                    CoordinateXY(0.0, 0.0),
-                    CoordinateXY(window.width.toDouble(), window.height.toDouble())
-                )
-                imageData.mask(transform.transform(pixelFeature))
-            } else {
-                imageData
-            }
-            maskedImageData
+        val imageData = raster.read(window, width, height, bandIndexOption?.bandIndexes)
+        val maskedImageData = if (pixelFeature != null) {
+            val from = pixelFeature.envelopeInternal
+            val transform = AffineTransformationFactory.createFromBaseLines(
+                CoordinateXY(from.minX, from.minY),
+                CoordinateXY(from.maxX, from.maxY),
+                CoordinateXY(0.0, 0.0),
+                CoordinateXY(window.width.toDouble(), window.height.toDouble())
+            )
+            imageData.mask(transform.transform(pixelFeature))
+        } else {
+            imageData
         }
         if (maskedImageData is OptionContext) {
             maskedImageData.put(openOptions, imageOptions)

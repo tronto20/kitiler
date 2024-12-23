@@ -1,10 +1,8 @@
 package dev.tronto.kitiler.core.outgoing.adaptor.gdal
 
-import dev.tronto.kitiler.core.exception.UnsupportedCrsStringException
 import dev.tronto.kitiler.core.outgoing.port.CRS
 import dev.tronto.kitiler.core.outgoing.port.CRSFactory
 import dev.tronto.kitiler.core.outgoing.port.CRSTransform
-import org.gdal.gdal.gdal
 import org.gdal.osr.CoordinateTransformation
 import org.gdal.osr.SpatialReference
 import org.gdal.osr.osr
