@@ -13,7 +13,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 open class GdalRasterFactory(
     private val crsFactory: CRSFactory = SpatialReferenceCRSFactory,
-    private val gdalDatasetFactory: GdalDatasetFactory = GdalDatasetFactory(crsFactory),
+    private val gdalDatasetFactory: GdalDatasetFactory = GdalDatasetFactory(),
 ) : RasterFactory {
     companion object {
         @JvmStatic

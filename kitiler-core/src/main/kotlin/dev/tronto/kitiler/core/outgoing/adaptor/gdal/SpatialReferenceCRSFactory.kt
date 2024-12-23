@@ -19,7 +19,7 @@ object SpatialReferenceCRSFactory : CRSFactory {
                     this.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
                 }
             }.getOrElse {
-                throw dev.tronto.kitiler.core.exception.UnsupportedCrsStringException(crsString)
+                throw dev.tronto.kitiler.core.exception.UnsupportedCrsStringException(crsString, it)
             }
         }
         return SpatialReferenceCRS(spatialReference, crsString)

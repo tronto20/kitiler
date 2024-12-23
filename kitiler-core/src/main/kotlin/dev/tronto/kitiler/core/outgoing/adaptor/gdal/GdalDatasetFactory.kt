@@ -13,8 +13,6 @@ import dev.tronto.kitiler.core.incoming.controller.option.get
 import dev.tronto.kitiler.core.incoming.controller.option.getAll
 import dev.tronto.kitiler.core.incoming.controller.option.getOrNull
 import dev.tronto.kitiler.core.outgoing.adaptor.gdal.path.tryToGdalPath
-import dev.tronto.kitiler.core.outgoing.port.CRS
-import dev.tronto.kitiler.core.outgoing.port.CRSFactory
 import dev.tronto.kitiler.image.outgoing.adaptor.gdal.gdalWarpString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.gdal.gdal.Dataset
@@ -26,7 +24,7 @@ import org.gdal.osr.osr
 import java.util.*
 import kotlin.io.path.toPath
 
-class GdalDatasetFactory(private val crsFactory: CRSFactory = SpatialReferenceCRSFactory) {
+class GdalDatasetFactory {
     companion object {
         @JvmStatic
         private val logger = KotlinLogging.logger { }
@@ -57,8 +55,7 @@ class GdalDatasetFactory(private val crsFactory: CRSFactory = SpatialReferenceCR
             "-dstalpha" to ""
         )
         if (crsOption != null) {
-            val targetCRS: CRS = crsFactory.create(crsOption.crsString)
-            warpOptions["-t_srs"] = targetCRS.proj4
+            warpOptions["-t_srs"] = crsOption.crsString
         }
 
         if (noData != null) {
@@ -97,6 +94,9 @@ class GdalDatasetFactory(private val crsFactory: CRSFactory = SpatialReferenceCR
     }
 
     private fun createDataset(path: String): GdalDataset {
+        val name = path.substringAfterLast('/')
+            .substringBefore('?')
+            .substringBeforeLast('.')
         val dataset: Dataset = try {
             val dataset: Dataset? = gdal.Open(path, gdalconst.GA_ReadOnly)
             dataset!!
@@ -115,9 +115,6 @@ class GdalDatasetFactory(private val crsFactory: CRSFactory = SpatialReferenceCR
             throw GdalDatasetOpenFailedException(path, e)
         }
 
-        val name = path.substringAfterLast('/')
-            .substringBefore('?')
-            .substringBeforeLast('.')
         return GdalDataset(name, dataset)
     }
 
@@ -155,22 +152,27 @@ class GdalDatasetFactory(private val crsFactory: CRSFactory = SpatialReferenceCR
             uri.toPath().toString()
         }
         val result = applyEnvs(openOptions) {
-            createDataset(path).use { dataset ->
+            val dataset = createDataset(path)
+            kotlin.runCatching {
                 val crsOption: CRSOption? = openOptions.getOrNull()
                 val noDataOption: NoDataOption? = openOptions.getOrNull()
                 val noData = noDataOption?.noData ?: dataset.noDataValue
                 if (crsOption != null || noData != null) {
-                    val resamplingAlgorithmOption: ResamplingOption = openOptions.get()
-                    createVRT(
-                        crsOption,
-                        noData,
-                        resamplingAlgorithmOption,
-                        dataset
-                    )
+                    dataset.use {
+                        val resamplingAlgorithmOption: ResamplingOption = openOptions.get()
+                        createVRT(
+                            crsOption,
+                            noData,
+                            resamplingAlgorithmOption,
+                            dataset
+                        )
+                    }
                 } else {
                     dataset
                 }
-            }
+            }.onFailure {
+                dataset.close()
+            }.getOrThrow()
         }
         return result
     }

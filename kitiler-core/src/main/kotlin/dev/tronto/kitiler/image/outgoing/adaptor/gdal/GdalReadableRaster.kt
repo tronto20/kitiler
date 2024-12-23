@@ -52,7 +52,7 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
         DataType.Int32,
         DataType.CInt16,
         DataType.CInt32,
-            -> Int::class
+        -> Int::class
 
         DataType.UInt32, DataType.Int64 -> Long::class
         DataType.Float32, DataType.CFloat32 -> Float::class

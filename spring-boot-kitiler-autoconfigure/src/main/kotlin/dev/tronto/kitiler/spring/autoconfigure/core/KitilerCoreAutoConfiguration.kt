@@ -23,7 +23,7 @@ class KitilerCoreAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(GdalDatasetFactory::class)
-    fun gdalDatasetFactory(crsFactory: CRSFactory): GdalDatasetFactory = GdalDatasetFactory(crsFactory)
+    fun gdalDatasetFactory(): GdalDatasetFactory = GdalDatasetFactory()
 
     @Bean
     @ConditionalOnBean(GdalDatasetFactory::class)
