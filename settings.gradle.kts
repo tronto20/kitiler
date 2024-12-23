@@ -30,8 +30,8 @@ plugins {
 rootProject.name = "kitiler"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-include(":dependencies")
-include(":core")
+include(":kitiler-dependencies")
+include(":kitiler-core")
 include(":spring-boot-kitiler-autoconfigure")
 include(":spring-boot-kitiler-starter-core")
-include(":spring-application")
+include(":kitiler-spring-application")

@@ -8,18 +8,113 @@ GDAL/Spring 기반으로 동작하는 동적 타일 렌더링 서버입니다.
 
 ---
 
-- 이미지 동적 렌더링
-- Spring 기반 웹서비스
+### core
+
 - COG (Cloud Optimized GeoTIFF) 지원
+- 여러 TileMatrixSet 지원
+- PNG 출력 지원, JPEG 제한적 지원
+- OGC WMTS 지원
+
+### spring-boot
+
+- Spring Boot Starter 지원
+- Spring WebFlux 기반으로 어플리케이션 자동 설정 
+
+### spring-application
+
+- Spring Boot Webflux 기반으로 구현된 어플리케이션
+- OpenAPI 문서 지원
+- Graalvm native-image 지원
 
 ## Modules
 
 ---
 
-- core : 정해진 파라미터들로 원하는 타일을 생성합니다.
-- spring-application : Spring 을 기반으로 웹 서비스를 구축합니다.
+| Module                                                                                                               | Description                           |
+|----------------------------------------------------------------------------------------------------------------------|---------------------------------------|
+| [kitiler-core](https://github.com/tronto20/kitiler/tree/main/core)                                                   | COG 영상을 대상으로 하는 동적 타일링 서비스            |
+| [kitiler-dependencies](https://github.com/tronto20/kitiler/tree/main/dependencies)                                   | kitiler 의 의존성 관리                      |
+| [spring-boot-kitiler-autoconfigure](https://github.com/tronto20/kitiler/tree/main/spring-boot-kitiler-autoconfigure) | spring-boot 기반의 kitiler autoconfigure |
+| [spring-boot-kitiler-starter-core](https://github.com/tronto20/kitiler/tree/main/spring-boot-kitiler-starter-core)   | kitiler-core 의 spring-boot-starter    |
+| [kitiler-spring-application](https://github.com/tronto20/kitiler/tree/main/spring-application)                       | spring 기반의 demo application           |
 
-## Project Configuration
+## Installation
+
+---
+
+### spring-boot
+
+현재는 webflux 기반으로만 지원합니다.
+
+build.gradle :
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "dev.tronto:spring-boot-kitiler-starter-core:0.2.1"
+    implementation "org.springframework.boot:spring-boot-starter-webflux:3.4.0"
+}
+```
+
+build.gradle.kts :
+```kotlin
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("dev.tronto:spring-boot-kitiler-starter-core:0.2.1")
+    implementation("org.springframework.boot:spring-boot-starter-webflux:3.4.0")
+}
+```
+
+## Container Image
+
+Github registry 에 OCI Container Image 가 준비되어 있습니다.
+
+Spring Boot Webflux + native-image (Default):
+```bash
+docker run --rm --name kitiler \
+  -p 8080:8080 \
+  -e PORT=8080 \
+  ghcr.io/tronto20/kitiler:latest
+```
+
+Spring Boot Webflux:
+```bash
+docker run --rm --name kitiler \
+  -p 8080:8080 \
+  -e PORT=8080 \
+  ghcr.io/tronto20/kitiler:spring-latest
+```
+
+### local 빌드
+
+Spring Boot Webflux + native-image (Default):
+```bash
+git clone https://github.com/tronto20/kitiler
+cd kitiler
+
+./gradlew buildImage
+```
+
+Spring Boot Webflux:
+```bash
+git clone https://github.com/tronto20/kitiler
+cd kitiler
+
+./gradlew buildImage -Pimage.native.enabled=false
+```
+
+
+## License
+
+[License](https://github.com/tronto20/kitiler/blob/main/LICENSE)
+
+
+## Development
 
 ---
 
@@ -39,25 +134,3 @@ dependencies {
 ...
 ```
 
-## 기능 흐름
-
----
-
-1. 소스 영상에서 이미지 데이터 추출
-    1. 소스 영상 열기
-    2. 좌표계에 맞게 영상 변환 (VRT)
-    3. 원하는 영역에 맞게 bounds 생성하여 데이터 추출
-    4. 원하는 영역에 맞게 자르고 회전
-2. 이미지 처리
-    1. 밴드 수 맞추기
-    2. 데이터 rescale 하기
-4. 타겟 영상 생성
-    1. Create 를 지원하면 바로 생성. CreateCopy 만 지원하면 Buffered 로 생성.
-    2. 처리된 이미지 결과물을 쓰기
-5. 타겟 데이터 출력
-    1. 타겟 영상의 raw data 를 응답
-    2. 타겟 영상 제거
-
-
-## License
-[License](https://github.com/tronto20/kitiler/blob/main/LICENSE)

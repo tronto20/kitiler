@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation(platform(projects.dependencies))
+    implementation(platform(projects.kitilerDependencies))
     implementation(kotlin("reflect"))
     implementation("io.github.oshai:kotlin-logging-jvm")
     implementation("org.slf4j:slf4j-api")

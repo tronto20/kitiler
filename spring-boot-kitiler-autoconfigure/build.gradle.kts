@@ -13,9 +13,9 @@ repositories {
 }
 
 dependencies {
-    implementation(platform(projects.dependencies))
+    implementation(platform(projects.kitilerDependencies))
     implementation(kotlin("reflect"))
-    compileOnly(projects.core)
+    compileOnly(projects.kitilerCore)
     compileOnly("org.thymeleaf:thymeleaf")
     compileOnly("org.springframework:spring-webflux")
     compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json")

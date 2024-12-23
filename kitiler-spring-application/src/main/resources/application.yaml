@@ -4,6 +4,7 @@ server:
     enabled: true
   http2:
     enabled: true
+  port: ${PORT:8080}
 
 logging:
   level:

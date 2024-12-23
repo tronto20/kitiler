@@ -59,10 +59,11 @@ repositories {
 }
 
 dependencies {
-    implementation(platform(projects.dependencies))
+    implementation(platform(projects.kitilerDependencies))
     implementation("io.github.oshai:kotlin-logging-jvm")
     implementation("io.swagger.parser.v3:swagger-parser")
     implementation(projects.springBootKitilerStarterCore)
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(module = "mockito-core")
@@ -121,20 +122,9 @@ tasks.bootBuildImage {
         ?.map { it.trim() }
         ?.ifEmpty { null }
         ?: emptyList()
-    val versionTags = (properties["image.version-tags"] as? String?)
-        ?.split(',')
-        ?.map { "$version-${it.trim()}" }
-        ?.ifEmpty { null }
-        ?: emptyList()
 
-    val defaultTags = if ((properties["image.default-tags"] as? String?).toBoolean()) {
-        listOf(version.toString(), "latest")
-    } else {
-        emptyList()
-    }
-
-    this.tags.set((tags + versionTags + defaultTags).map { "$baseName:$it" })
-    this.imageName.set(this.tags.get().firstOrNull() ?: "$baseName:$version")
+    this.tags.set((tags).map { "$baseName:${it.replace("{VERSION}", version.toString(), true)}" })
+    this.imageName.set(this.tags.get().firstOrNull() ?: "$baseName:latest")
 
     (properties["image.push"] as? String?)?.let { publish.set(it.toBoolean()) }
     val envs = environment.get().toMutableMap()

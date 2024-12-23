@@ -11,15 +11,14 @@ repositories {
 }
 
 dependencies {
-    implementation(platform(projects.dependencies))
+    implementation(platform(projects.kitilerDependencies))
     api(kotlin("reflect"))
-    api(projects.core)
+    api(projects.kitilerCore)
     api(projects.springBootKitilerAutoconfigure)
     api("org.thymeleaf:thymeleaf")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     api("org.jetbrains.kotlinx:kotlinx-serialization-json")
-    api("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 val jvmVersion = (properties["jvm.version"] as? String)?.toIntOrNull() ?: 21

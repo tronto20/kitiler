@@ -56,7 +56,7 @@ jobs:
             -Pimage.registry.publish.username=${{github.actor}} \
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
             -Pimage.name=ghcr.io/tronto20/kitiler \
-            -Pimage.version-tags=spring \
+            -Pimage.tags=spring-latest, spring-{VERSION} \
             -Pimage.push=true
 
   publish-spring-native:
@@ -84,6 +84,5 @@ jobs:
             -Pimage.registry.publish.username=${{github.actor}} \
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
             -Pimage.name=ghcr.io/tronto20/kitiler \
-            -Pimage.version-tags=spring-native \
-            -Pimage.default-tags=true \
+            -Pimage.tags=spring-native-latest, spring-native-{VERSION}, latest, {VERSION} \
             -Pimage.push=true
