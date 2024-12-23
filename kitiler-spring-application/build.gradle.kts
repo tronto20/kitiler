@@ -15,26 +15,6 @@ plugins {
 
 val jvmVersion = (properties["jvm.version"] as? String)?.toIntOrNull() ?: 21
 
-if (properties["image.native.enabled"].toString().toBoolean()) {
-    apply(plugin = "org.graalvm.buildtools.native")
-    afterEvaluate {
-        tasks.bootBuildImage {
-            val customEnvs = mutableMapOf<String, String>()
-            (properties["image.native.compression"] as? String)?.let { compression ->
-                customEnvs["BP_BINARY_COMPRESSION_METHOD"] = compression
-            }
-
-            val taskEnv = (this.environment.orNull ?: emptyMap())
-            this.environment.set(taskEnv + customEnvs)
-        }
-        tasks.withType<Exec>().findByName("buildRunnerImage")?.apply {
-            this.args("--build-arg")
-            this.args("STACK_ID=io.buildpacks.stacks.jammy.tiny")
-        }
-    }
-
-}
-
 if (properties["image.debug.enabled"].toString().toBoolean()) {
     afterEvaluate {
         tasks.bootBuildImage {
@@ -80,6 +60,7 @@ dependencies {
     testImplementation("com.epages:restdocs-api-spec-webtestclient")
 }
 
+val runImageName = "docker.io/library/kitiler-spring-application-runner:latest"
 val buildRunnerImageTask = tasks.register("buildRunnerImage", PathExec::class.java) {
     this.group = "build"
     workingDir = project.projectDir
@@ -89,7 +70,7 @@ val buildRunnerImageTask = tasks.register("buildRunnerImage", PathExec::class.ja
             "build",
             ".",
             "-t",
-            "docker.io/library/spring-application-runner:latest",
+            runImageName,
         )
     )
 
@@ -98,9 +79,25 @@ val buildRunnerImageTask = tasks.register("buildRunnerImage", PathExec::class.ja
     args("GDAL_VERSION=${gdalVersion}")
 }
 
+
+if (properties["image.native.enabled"].toString().toBoolean()) {
+    apply(plugin = "org.graalvm.buildtools.native")
+    afterEvaluate {
+        tasks.bootBuildImage {
+            val customEnvs = mutableMapOf<String, String>()
+            (properties["image.native.compression"] as? String)?.let { compression ->
+                customEnvs["BP_BINARY_COMPRESSION_METHOD"] = compression
+            }
+
+            val taskEnv = (this.environment.orNull ?: emptyMap())
+            this.environment.set(taskEnv + customEnvs)
+        }
+    }
+}
+
 tasks.bootBuildImage {
     dependsOn(buildRunnerImageTask)
-    this.runImage.set("docker.io/library/spring-application-runner:latest")
+    this.runImage.set(runImageName)
     this.pullPolicy.set(PullPolicy.IF_NOT_PRESENT)
 
     fun DockerRegistrySpec.configure(name: String) {
