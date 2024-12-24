@@ -12,7 +12,7 @@ import dev.tronto.kitiler.image.outgoing.port.ReadableRasterFactory
 
 open class GdalReadableRasterFactory(
     private val crsFactory: CRSFactory = SpatialReferenceCRSFactory,
-    private val gdalDatasetFactory: GdalDatasetFactory = GdalDatasetFactory(),
+    private val gdalDatasetFactory: GdalDatasetFactory = GdalDatasetFactory(crsFactory),
     private val gdalRasterFactory: RasterFactory = GdalRasterFactory(crsFactory, gdalDatasetFactory),
 ) : ReadableRasterFactory,
     RasterFactory by gdalRasterFactory {

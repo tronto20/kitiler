@@ -13,6 +13,7 @@ import dev.tronto.kitiler.core.incoming.controller.option.get
 import dev.tronto.kitiler.core.incoming.controller.option.getAll
 import dev.tronto.kitiler.core.incoming.controller.option.getOrNull
 import dev.tronto.kitiler.core.outgoing.adaptor.gdal.path.tryToGdalPath
+import dev.tronto.kitiler.core.outgoing.port.CRSFactory
 import dev.tronto.kitiler.image.outgoing.adaptor.gdal.gdalWarpString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.gdal.gdal.Dataset
@@ -24,7 +25,7 @@ import org.gdal.osr.osr
 import java.util.*
 import kotlin.io.path.toPath
 
-class GdalDatasetFactory {
+class GdalDatasetFactory(private val crsFactory: CRSFactory) {
     companion object {
         @JvmStatic
         private val logger = KotlinLogging.logger { }
@@ -98,8 +99,8 @@ class GdalDatasetFactory {
             .substringBefore('?')
             .substringBeforeLast('.')
         val dataset: Dataset = try {
-            val dataset: Dataset? = gdal.Open(path, gdalconst.GA_ReadOnly)
-            dataset!!
+//            val dataset: Dataset? = gdal.Open(path, gdalconst.GA_ReadOnly)
+            gdal.OpenEx(path, gdalconst.OF_READONLY.or(gdalconst.OF_RASTER).toLong())!!
         } catch (e: NullPointerException) {
             throw GdalDatasetOpenFailedException(
                 path,
@@ -157,7 +158,8 @@ class GdalDatasetFactory {
                 val crsOption: CRSOption? = openOptions.getOrNull()
                 val noDataOption: NoDataOption? = openOptions.getOrNull()
                 val noData = noDataOption?.noData ?: dataset.noDataValue
-                if (crsOption != null || noData != null) {
+                val crs = crsOption?.let { crsFactory.create(it.crsString) }
+                if ((crs != null && !crs.isSame(dataset.getCrs(crsFactory))) || noData != null) {
                     dataset.use {
                         val resamplingAlgorithmOption: ResamplingOption = openOptions.get()
                         createVRT(

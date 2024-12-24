@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 
 internal class GdalReader(
     private val openOptions: OptionProvider<OpenOption>,
-    private val gdalDatasetFactory: GdalDatasetFactory = GdalDatasetFactory(),
+    private val gdalDatasetFactory: GdalDatasetFactory,
 ) {
     companion object {
         @JvmStatic

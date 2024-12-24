@@ -6,14 +6,13 @@ import dev.tronto.kitiler.core.domain.ColorInterpretation
 import dev.tronto.kitiler.core.domain.DataType
 import dev.tronto.kitiler.core.incoming.controller.option.OpenOption
 import dev.tronto.kitiler.core.incoming.controller.option.OptionProvider
-import dev.tronto.kitiler.core.outgoing.port.CRS
 import dev.tronto.kitiler.core.outgoing.port.CRSFactory
 import dev.tronto.kitiler.core.outgoing.port.RasterFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 open class GdalRasterFactory(
     private val crsFactory: CRSFactory = SpatialReferenceCRSFactory,
-    private val gdalDatasetFactory: GdalDatasetFactory = GdalDatasetFactory(),
+    private val gdalDatasetFactory: GdalDatasetFactory = GdalDatasetFactory(crsFactory),
 ) : RasterFactory {
     companion object {
         @JvmStatic
@@ -38,18 +37,7 @@ open class GdalRasterFactory(
             }
         }
 
-        // TODO :: GeoTransform 과 GCP 모두 없는 영상의 CRS 가 잘 만들어지는지 확인.
-        val spatialRef = dataset.GetSpatialRef() ?: dataset.GetGCPSpatialRef()
-        val crs: CRS = try {
-            crsFactory.create(spatialRef.ExportToWkt())
-        } finally {
-            try {
-                spatialRef?.delete()
-            } catch (e: Exception) {
-                // ignore
-                logger.warn(e) { "error in delete SpatialReference." }
-            }
-        }
+        val crs = gdalDataset.getCrs(crsFactory)
 
         return GdalRaster(
             gdalDataset.name,
