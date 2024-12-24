@@ -28,6 +28,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:multik-default")
 
     implementation("org.thymeleaf:thymeleaf")
+
+    testImplementation("io.kotest:kotest-runner-junit5")
+    testImplementation("io.kotest:kotest-extensions-junit5")
+    testImplementation("io.kotest:kotest-assertions-core")
+    testImplementation("io.mockk:mockk")
+
 }
 
 val jvmVersion = (properties["jvm.version"] as? String)?.toIntOrNull() ?: 21
@@ -42,4 +48,8 @@ mavenPublishing {
     }
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

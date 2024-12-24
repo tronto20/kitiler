@@ -6,18 +6,16 @@ import dev.tronto.kitiler.core.incoming.controller.option.OptionProvider
 import dev.tronto.kitiler.core.utils.logTrace
 import dev.tronto.kitiler.image.domain.ImageData
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import org.jetbrains.kotlinx.multik.api.mk
-import org.jetbrains.kotlinx.multik.ndarray.data.D2
+import org.jetbrains.kotlinx.multik.api.ndarray
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.D3Array
-import org.jetbrains.kotlinx.multik.ndarray.data.view
 import org.jetbrains.kotlinx.multik.ndarray.operations.all
 import org.jetbrains.kotlinx.multik.ndarray.operations.mapMultiIndexed
-import org.jetbrains.kotlinx.multik.ndarray.operations.stack
+import org.jetbrains.kotlinx.multik.ndarray.operations.toDoubleArray
+import org.jetbrains.kotlinx.multik.ndarray.operations.toFloatArray
+import org.jetbrains.kotlinx.multik.ndarray.operations.toIntArray
+import org.jetbrains.kotlinx.multik.ndarray.operations.toLongArray
 import org.locationtech.jts.algorithm.locate.IndexedPointInAreaLocator
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
@@ -115,14 +113,72 @@ sealed class NDArrayImageData<T>(
         }
     }
 
-    private suspend fun rescaleToInt(rangeFrom: List<NumberRange<T>>, rangeTo: List<IntRange>): D3Array<Int> {
-        val rescaled = (0..<data.shape[0]).map { band ->
-            CoroutineScope(Dispatchers.Default).async {
-                val from = rangeFrom.getOrElse(band) { rangeFrom[0] }
-                val to = rangeTo.getOrElse(band) { rangeTo[0] }
-                linearRescale<T, D2>(data.view(band), from, to)
+    private fun rescaleToInt(rangeFrom: List<ClosedRange<T>>, rangeTo: List<IntRange>): D3Array<Int> =
+        when (this.dataType) {
+            DataType.Int8,
+            DataType.UInt8,
+            DataType.UInt16,
+            DataType.Int16,
+            DataType.Int32,
+            -> {
+                val dataArray = (data as D3Array<Int>).toIntArray()
+                val pixelSizePerBand = data.shape[1] * data.shape[2]
+
+                (0..<data.shape[0]).forEach { band ->
+                    val from =
+                        rangeFrom.getOrElse(band) { rangeFrom[0] }.let { it.start.toInt()..it.endInclusive.toInt() }
+                    val to = rangeTo.getOrElse(band) { rangeTo[0] }
+                    linearRescaleToInt(dataArray, pixelSizePerBand * band, pixelSizePerBand, from, to)
+                }
+                mk.ndarray(dataArray, data.shape[0], data.shape[1], data.shape[2])
             }
+
+            DataType.UInt32,
+            DataType.Int64,
+            -> {
+                val dataArray = (data as D3Array<Long>).toLongArray()
+                val targetArray = IntArray(dataArray.size)
+                val pixelSizePerBand = data.shape[1] * data.shape[2]
+                (0..<data.shape[0]).forEach { band ->
+                    val from =
+                        rangeFrom.getOrElse(band) { rangeFrom[0] }.let { it.start.toLong()..it.endInclusive.toLong() }
+                    val to = rangeTo.getOrElse(band) { rangeTo[0] }
+                    linearRescaleToInt(dataArray, pixelSizePerBand * band, pixelSizePerBand, from, to, targetArray)
+                }
+                mk.ndarray(targetArray, data.shape[0], data.shape[1], data.shape[2])
+            }
+
+            DataType.Float32,
+            DataType.CFloat32,
+            -> {
+                val dataArray = (data as D3Array<Float>).toFloatArray()
+                val targetArray = IntArray(dataArray.size)
+                val pixelSizePerBand = data.shape[1] * data.shape[2]
+                (0..<data.shape[0]).forEach { band ->
+                    val from =
+                        rangeFrom.getOrElse(band) { rangeFrom[0] }.let { it.start.toFloat()..it.endInclusive.toFloat() }
+                    val to = rangeTo.getOrElse(band) { rangeTo[0] }
+                    linearRescaleToInt(dataArray, pixelSizePerBand * band, pixelSizePerBand, from, to, targetArray)
+                }
+                mk.ndarray(targetArray, data.shape[0], data.shape[1], data.shape[2])
+            }
+
+            DataType.Float64,
+            DataType.CFloat64,
+            -> {
+                val dataArray = (data as D3Array<Double>).toDoubleArray()
+                val targetArray = IntArray(dataArray.size)
+                val pixelSizePerBand = data.shape[1] * data.shape[2]
+                (0..<data.shape[0]).forEach { band ->
+                    val from =
+                        rangeFrom.getOrElse(band) { rangeFrom[0] }
+                            .let { it.start.toDouble()..it.endInclusive.toDouble() }
+                    val to = rangeTo.getOrElse(band) { rangeTo[0] }
+                    linearRescaleToInt(dataArray, pixelSizePerBand * band, pixelSizePerBand, from, to, targetArray)
+                }
+                mk.ndarray(targetArray, data.shape[0], data.shape[1], data.shape[2])
+            }
+
+            else -> throw UnsupportedOperationException("${this.dataType} is not supported.")
         }
-        return mk.stack(rescaled.awaitAll())
-    }
 }
