@@ -30,7 +30,7 @@ class GdalDataset(val name: String, val dataset: Dataset, private val memFilePat
     )
 
     init {
-        val result = Array<Double?>(1) { null }
+        val result = arrayOf<Double?>(null)
         sampleBand.GetNoDataValue(result)
         this.noDataValue = result[0]
     }
