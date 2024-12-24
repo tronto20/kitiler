@@ -1,7 +1,6 @@
 package dev.tronto.kitiler.tile.service
 
 import dev.tronto.kitiler.core.domain.OptionContext
-import dev.tronto.kitiler.core.exception.UnsupportedCrsStringException
 import dev.tronto.kitiler.core.incoming.controller.option.CRSOption
 import dev.tronto.kitiler.core.incoming.controller.option.OpenOption
 import dev.tronto.kitiler.core.incoming.controller.option.OptionProvider
@@ -161,9 +160,8 @@ class TileService(
             tileWidth,
             tileHeight
         )
-        val window = rasterFactory.withRaster(tileOpenOptions) {
-            window(tileBounds, it)
-        }
+        val raster = rasterFactory.create(tileOpenOptions)
+        val window = window(tileBounds, raster)
         val windowOption = WindowOption(window)
 
         val tileImageOptions =
@@ -216,10 +214,8 @@ class TileService(
         val crsTileMatrixSet = crsTileMatrixSet(tileMatrixSet)
         val crsOption = CRSOption(crsTileMatrixSet.crs.wkt)
         val tileOpenOptions = openOptions + crsOption
-
-        val (minZoom, maxZoom) = rasterFactory.withRaster(tileOpenOptions) {
-            getMinMaxZoom(crsTileMatrixSet, it)
-        }
+        val raster = rasterFactory.create(tileOpenOptions)
+        val (minZoom, maxZoom) = getMinMaxZoom(crsTileMatrixSet, raster)
         val info = infoUseCase.getInfo(tileOpenOptions)
         return TileInfo(
             minZoom,

@@ -3,10 +3,12 @@ package dev.tronto.kitiler.image.outgoing.adaptor.gdal
 import dev.tronto.kitiler.core.domain.BandIndex
 import dev.tronto.kitiler.core.domain.ColorInterpretation
 import dev.tronto.kitiler.core.domain.DataType
-import dev.tronto.kitiler.core.outgoing.adaptor.gdal.GdalBaseRaster
-import dev.tronto.kitiler.core.outgoing.adaptor.gdal.gdalConst
-import dev.tronto.kitiler.core.outgoing.adaptor.gdal.handleError
+import dev.tronto.kitiler.core.incoming.controller.option.ArgumentType
+import dev.tronto.kitiler.core.incoming.controller.option.OpenOption
+import dev.tronto.kitiler.core.outgoing.adaptor.gdal.GdalDatasetFactory
+import dev.tronto.kitiler.core.outgoing.port.Raster
 import dev.tronto.kitiler.core.utils.logTrace
+import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.Window
 import dev.tronto.kitiler.image.outgoing.adaptor.multik.DoubleImageData
 import dev.tronto.kitiler.image.outgoing.adaptor.multik.FloatImageData
@@ -34,9 +36,9 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.toIntArray
 import org.jetbrains.kotlinx.multik.ndarray.operations.toLongArray
 import kotlin.reflect.KClass
 
-open class GdalReadableRaster(private val gdalRaster: GdalBaseRaster) :
+class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, private val raster: Raster) :
     ReadableRaster,
-    GdalBaseRaster by gdalRaster {
+    Raster by raster {
     companion object {
         @JvmStatic
         private val logger = KotlinLogging.logger { }
@@ -205,16 +207,7 @@ open class GdalReadableRaster(private val gdalRaster: GdalBaseRaster) :
         return data.normalize() to mask.normalize()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Number> getReader(kClass: KClass<T>) = when (kClass) {
-        Int::class -> IntDataReader()
-        Long::class -> LongDataReader()
-        Float::class -> FloatDataReader()
-        Double::class -> DoubleDataReader()
-        else -> throw UnsupportedOperationException("$kClass is not supported.")
-    } as Reader<T>
-
-    private fun <T> read(
+    private suspend fun <T> read(
         window: Window,
         width: Int,
         height: Int,
@@ -244,19 +237,25 @@ open class GdalReadableRaster(private val gdalRaster: GdalBaseRaster) :
             else -> throw UnsupportedOperationException()
         } as T?
 
-        val reader = getReader(kClass)
+        val openOptions = raster.getOptionProvider(ArgumentType<OpenOption>())
+        val reader = GdalReader(openOptions, gdalDatasetFactory)
 
         val (data, mask) = if (alphaBand != null) {
             val alphaBandInfo = bandInfo(BandIndex(alphaBand))
 
             val (data, mask) = if (alphaBandInfo.dataType != dataType) {
-                val data = reader.readData(bandList, width, height, window).normalize()
-                val maskReader = getReader(alphaBandInfo.dataType.toKotlinKClass())
-                val mask2 = maskReader.readData(intArrayOf(alphaBand), width, height, window)
-                val mask = mask2.map { if (it.toInt() == 0) 0 else 1 }.squeeze().asD2Array()
+                val data = reader.readData(kClass, bandList, width, height, window).normalize()
+                val maskBand = reader.readData(
+                    alphaBandInfo.dataType.toKotlinKClass(),
+                    intArrayOf(alphaBand),
+                    width,
+                    height,
+                    window
+                )
+                val mask = maskBand.map { if (it.toInt() == 0) 0 else 1 }.squeeze().asD2Array()
                 data to mask
             } else {
-                val dataAndMask = reader.readData(bandList + alphaBand, width, height, window)
+                val dataAndMask = reader.readData(kClass, bandList + alphaBand, width, height, window)
                 val data = dataAndMask[bandList.indices] as D3Array<T>
                 val mask2 = dataAndMask[bandList.size] as D2Array<T>
                 val mask = mask2.map { if (it.toInt() == 0) 0 else 1 }.squeeze().asD2Array()
@@ -269,10 +268,11 @@ open class GdalReadableRaster(private val gdalRaster: GdalBaseRaster) :
             }
             data to resultMask
         } else {
-            val data = reader.readData(bandList, width, height, window)
+            val data = reader.readData(kClass, bandList, width, height, window)
             val mask = mask(data, noDataValue)
             data to mask
         }
+
         val (resultData, resultMask) = pad(
             data.normalize(),
             mask.normalize(),
@@ -296,13 +296,13 @@ open class GdalReadableRaster(private val gdalRaster: GdalBaseRaster) :
         imageData as NDArrayImageData<T>
     }
 
-    override fun read(
+    override suspend fun read(
         window: Window,
         width: Int,
         height: Int,
         bandIndexes: List<BandIndex>?,
         nodata: Number?,
-    ): NDArrayImageData<*> {
+    ): ImageData {
         val leftOver = if (window.xOffset < 0) -window.xOffset else 0
         val rightOver = if (window.xOffset + window.width > this.width) {
             window.xOffset + window.width - this.width
@@ -379,114 +379,5 @@ open class GdalReadableRaster(private val gdalRaster: GdalBaseRaster) :
         }
 
         return imageData
-    }
-
-    override fun close() {
-        dataset.delete()
-    }
-
-    private abstract inner class Reader<T : Number> {
-        fun readData(bandList: IntArray, width: Int, height: Int, window: Window): D3Array<T> =
-            logger.logTrace("read gdal") {
-                read(bandList, width, height, window)
-            }
-
-        abstract fun read(bandList: IntArray, width: Int, height: Int, window: Window): D3Array<T>
-    }
-
-    private inner class IntDataReader : Reader<Int>() {
-
-        private fun readIntData(bandList: IntArray, width: Int, height: Int, window: Window): D3Array<Int> {
-            val arr = IntArray(bandList.size * width * height)
-            dataset.handleError {
-                ReadRaster(
-                    window.xOffset,
-                    window.yOffset,
-                    window.width,
-                    window.height,
-                    width,
-                    height,
-                    DataType.Int32.gdalConst,
-                    arr,
-                    bandList
-                )
-            }
-            return mk.ndarray(arr, bandList.size, height, width)
-        }
-
-        override fun read(bandList: IntArray, width: Int, height: Int, window: Window): D3Array<Int> =
-            readIntData(bandList, width, height, window)
-    }
-
-    private inner class LongDataReader : Reader<Long>() {
-
-        private fun readLongData(bandList: IntArray, width: Int, height: Int, window: Window): D3Array<Long> {
-            val arr = LongArray(bandList.size * width * height)
-            dataset.handleError {
-                ReadRaster(
-                    window.xOffset,
-                    window.yOffset,
-                    window.width,
-                    window.height,
-                    width,
-                    height,
-                    DataType.Int64.gdalConst,
-                    arr,
-                    bandList
-                )
-            }
-            return mk.ndarray(arr, bandList.size, height, width)
-        }
-
-        override fun read(bandList: IntArray, width: Int, height: Int, window: Window): D3Array<Long> =
-            readLongData(bandList, width, height, window)
-    }
-
-    private inner class FloatDataReader : Reader<Float>() {
-
-        private fun readFloatData(bandList: IntArray, width: Int, height: Int, window: Window): D3Array<Float> {
-            val arr = FloatArray(bandList.size * width * height)
-            dataset.handleError {
-                ReadRaster(
-                    window.xOffset,
-                    window.yOffset,
-                    window.width,
-                    window.height,
-                    width,
-                    height,
-                    DataType.Float32.gdalConst,
-                    arr,
-                    bandList
-                )
-            }
-            return mk.ndarray(arr, bandList.size, height, width)
-        }
-
-        override fun read(bandList: IntArray, width: Int, height: Int, window: Window): D3Array<Float> =
-            readFloatData(bandList, width, height, window)
-    }
-
-    private inner class DoubleDataReader : Reader<Double>() {
-
-        private fun readDoubleData(bandList: IntArray, width: Int, height: Int, window: Window): D3Array<Double> {
-            val arr = DoubleArray(bandList.size * width * height)
-            dataset.handleError {
-                ReadRaster(
-                    window.xOffset,
-                    window.yOffset,
-                    window.width,
-                    window.height,
-                    width,
-                    height,
-                    DataType.Float64.gdalConst,
-                    arr,
-                    bandList
-                )
-            }
-            return mk.ndarray(arr, bandList.size, height, width)
-        }
-
-        override fun read(bandList: IntArray, width: Int, height: Int, window: Window): D3Array<Double> =
-            readDoubleData(bandList, width, height, window)
     }
 }

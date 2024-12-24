@@ -4,5 +4,5 @@ import dev.tronto.kitiler.core.incoming.controller.option.OpenOption
 import dev.tronto.kitiler.core.incoming.controller.option.OptionProvider
 
 interface RasterFactory {
-    suspend fun <T> withRaster(openOptions: OptionProvider<OpenOption>, block: (dataset: Raster) -> T): T
+    suspend fun create(options: OptionProvider<OpenOption>): Raster
 }
