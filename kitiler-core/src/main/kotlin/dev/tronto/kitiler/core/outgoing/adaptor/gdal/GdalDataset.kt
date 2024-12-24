@@ -5,9 +5,6 @@ import dev.tronto.kitiler.core.outgoing.adaptor.jts.AffineCoordinateTransform
 import dev.tronto.kitiler.core.outgoing.port.CRS
 import dev.tronto.kitiler.core.outgoing.port.CRSFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.gdal.gdal.Band
 import org.gdal.gdal.Dataset
 import org.gdal.gdal.gdal
@@ -39,16 +36,13 @@ class GdalDataset(val name: String, val dataset: Dataset, private val memFilePat
     }
 
     override fun close() {
-        scope.launch {
-            kotlin.runCatching {
-                sampleBand.delete()
-            }
-            kotlin.runCatching {
-                dataset.delete()
-            }
-            memFilePath?.let { gdal.Unlink(it) }
-            // ignore errors
+        kotlin.runCatching {
+            sampleBand.delete()
         }
+        kotlin.runCatching {
+            dataset.delete()
+        }
+        memFilePath?.let { gdal.Unlink(it) }
     }
 
     fun getCrs(crsFactory: CRSFactory): CRS {
@@ -67,8 +61,6 @@ class GdalDataset(val name: String, val dataset: Dataset, private val memFilePat
     }
 
     companion object {
-        private val scope = CoroutineScope(Dispatchers.IO)
-
         @JvmStatic
         private val logger = KotlinLogging.logger { }
     }
