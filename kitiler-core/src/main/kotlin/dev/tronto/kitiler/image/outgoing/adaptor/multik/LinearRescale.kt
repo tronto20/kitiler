@@ -10,6 +10,95 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.toFloatArray
 import org.jetbrains.kotlinx.multik.ndarray.operations.toIntArray
 import org.jetbrains.kotlinx.multik.ndarray.operations.toLongArray
 
+fun linearRescaleToInt(
+    array: IntArray,
+    offset: Int,
+    size: Int,
+    from: IntRange,
+    to: IntRange,
+    targetArray: IntArray = array,
+): IntArray {
+    val ratio = (to.last - to.first).toDouble() / (from.last - from.first)
+    for (index in offset until offset + size) {
+        val value = array[index]
+        targetArray[index] = if (value <= from.first) {
+            to.first
+        } else if (value >= from.last) {
+            to.last
+        } else {
+            ((value - from.first) * ratio).toInt() + to.first
+        }
+    }
+    return targetArray
+}
+
+fun linearRescaleToInt(
+    array: LongArray,
+    offset: Int,
+    size: Int,
+    from: LongRange,
+    to: IntRange,
+    targetArray: IntArray = IntArray(array.size),
+): IntArray {
+    val ratio = (to.last - to.first).toDouble() / (from.last - from.first)
+    for (index in offset until offset + size) {
+        val value = array[index]
+        targetArray[index] = if (value <= from.first) {
+            to.first
+        } else if (value >= from.last) {
+            to.last
+        } else {
+            ((value - from.first) * ratio).toInt() + to.first
+        }
+    }
+    return targetArray
+}
+
+fun linearRescaleToInt(
+    array: FloatArray,
+    offset: Int,
+    size: Int,
+    from: ClosedFloatingPointRange<Float>,
+    to: IntRange,
+    targetArray: IntArray = IntArray(array.size),
+): IntArray {
+    val ratio = (to.last - to.first).toDouble() / (from.start - from.endInclusive)
+    for (index in offset until offset + size) {
+        val value = array[index]
+        targetArray[index] = if (value <= from.start) {
+            to.first
+        } else if (value >= from.endInclusive) {
+            to.last
+        } else {
+            ((value - from.start) * ratio).toInt() + to.first
+        }
+    }
+    return targetArray
+}
+
+fun linearRescaleToInt(
+    array: DoubleArray,
+    offset: Int,
+    size: Int,
+    from: ClosedFloatingPointRange<Double>,
+    to: IntRange,
+    targetArray: IntArray = IntArray(array.size),
+): IntArray {
+    val ratio = (to.last - to.first).toDouble() / (from.start - from.endInclusive)
+    for (index in offset until offset + size) {
+        val value = array[index]
+        targetArray[index] = if (value <= from.start) {
+            to.first
+        } else if (value >= from.endInclusive) {
+            to.last
+        } else {
+            ((value - from.start) * ratio).toInt() + to.first
+        }
+    }
+    return targetArray
+}
+
+@Deprecated("replace to linearRescaleToInt")
 fun <T, D> linearRescale(
     data: MultiArray<T, D>,
     from: NumberRange<T>,
