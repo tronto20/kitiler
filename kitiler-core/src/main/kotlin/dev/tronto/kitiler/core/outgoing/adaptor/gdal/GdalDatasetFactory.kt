@@ -67,7 +67,7 @@ class GdalDatasetFactory(private val crsFactory: CRSFactory) {
 
         val hasAlphaBand = (1..<rasterDataset.bandCount).reversed().any {
             rasterDataset.dataset.GetRasterBand(it).use {
-                ColorInterpretation[it.GetColorInterpretation()] == ColorInterpretation.AlphaBand
+                ColorInterpretation[it.GetColorInterpretation()] == ColorInterpretation.Alpha
             }
         }
 

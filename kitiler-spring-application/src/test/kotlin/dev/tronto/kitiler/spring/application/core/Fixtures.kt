@@ -31,18 +31,18 @@ val testInfo = Info(
         BandInfo(
             BandIndex(1),
             DataType.UInt8,
-            colorInterpolation = ColorInterpretation.RedBand
+            colorInterpolation = ColorInterpretation.Red
         ),
         BandInfo(
             BandIndex(2),
             DataType.UInt8,
             description = "description",
-            colorInterpolation = ColorInterpretation.GreenBand
+            colorInterpolation = ColorInterpretation.Green
         ),
         BandInfo(
             BandIndex(3),
             DataType.UInt8,
-            colorInterpolation = ColorInterpretation.BlueBand,
+            colorInterpolation = ColorInterpretation.Blue,
             metadata = mapOf("metadata" to "1")
         )
     )

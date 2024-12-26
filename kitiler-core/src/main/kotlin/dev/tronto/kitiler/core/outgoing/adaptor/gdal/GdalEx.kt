@@ -89,19 +89,19 @@ operator fun ColorInterpretation.Companion.get(gdalConst: Int): ColorInterpretat
     org.gdal.gdalconst.gdalconst.GCI_Undefined -> ColorInterpretation.Undefined
     org.gdal.gdalconst.gdalconst.GCI_GrayIndex -> ColorInterpretation.GrayIndex
     org.gdal.gdalconst.gdalconst.GCI_PaletteIndex -> ColorInterpretation.PaletteIndex
-    org.gdal.gdalconst.gdalconst.GCI_RedBand -> ColorInterpretation.RedBand
-    org.gdal.gdalconst.gdalconst.GCI_GreenBand -> ColorInterpretation.GreenBand
-    org.gdal.gdalconst.gdalconst.GCI_BlueBand -> ColorInterpretation.BlueBand
-    org.gdal.gdalconst.gdalconst.GCI_AlphaBand -> ColorInterpretation.AlphaBand
-    org.gdal.gdalconst.gdalconst.GCI_HueBand -> ColorInterpretation.HueBand
-    org.gdal.gdalconst.gdalconst.GCI_SaturationBand -> ColorInterpretation.SaturationBand
-    org.gdal.gdalconst.gdalconst.GCI_LightnessBand -> ColorInterpretation.LightnessBand
-    org.gdal.gdalconst.gdalconst.GCI_CyanBand -> ColorInterpretation.CyanBand
-    org.gdal.gdalconst.gdalconst.GCI_MagentaBand -> ColorInterpretation.MagentaBand
-    org.gdal.gdalconst.gdalconst.GCI_YellowBand -> ColorInterpretation.YellowBand
-    org.gdal.gdalconst.gdalconst.GCI_BlackBand -> ColorInterpretation.BlackBand
-    org.gdal.gdalconst.gdalconst.GCI_YCbCr_YBand -> ColorInterpretation.YCbCr_YBand
-    org.gdal.gdalconst.gdalconst.GCI_YCbCr_CrBand -> ColorInterpretation.YCbCr_CrBand
-    org.gdal.gdalconst.gdalconst.GCI_YCbCr_CbBand -> ColorInterpretation.YCbCr_CbBand
+    org.gdal.gdalconst.gdalconst.GCI_RedBand -> ColorInterpretation.Red
+    org.gdal.gdalconst.gdalconst.GCI_GreenBand -> ColorInterpretation.Green
+    org.gdal.gdalconst.gdalconst.GCI_BlueBand -> ColorInterpretation.Blue
+    org.gdal.gdalconst.gdalconst.GCI_AlphaBand -> ColorInterpretation.Alpha
+    org.gdal.gdalconst.gdalconst.GCI_HueBand -> ColorInterpretation.Hue
+    org.gdal.gdalconst.gdalconst.GCI_SaturationBand -> ColorInterpretation.Saturation
+    org.gdal.gdalconst.gdalconst.GCI_LightnessBand -> ColorInterpretation.Lightness
+    org.gdal.gdalconst.gdalconst.GCI_CyanBand -> ColorInterpretation.Cyan
+    org.gdal.gdalconst.gdalconst.GCI_MagentaBand -> ColorInterpretation.Magenta
+    org.gdal.gdalconst.gdalconst.GCI_YellowBand -> ColorInterpretation.Yellow
+    org.gdal.gdalconst.gdalconst.GCI_BlackBand -> ColorInterpretation.Black
+    org.gdal.gdalconst.gdalconst.GCI_YCbCr_YBand -> ColorInterpretation.YCbCr_Y
+    org.gdal.gdalconst.gdalconst.GCI_YCbCr_CrBand -> ColorInterpretation.YCbCr_Cr
+    org.gdal.gdalconst.gdalconst.GCI_YCbCr_CbBand -> ColorInterpretation.YCbCr_Cb
     else -> throw IllegalArgumentException("Invalid gdalconst for ColorInterpretation: $gdalConst")
 }

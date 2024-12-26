@@ -30,6 +30,6 @@ interface Raster : OptionContext {
     fun bandInfo(bandIndex: BandIndex): BandInfo
 
     fun hasAlphaBand(): Boolean = (1..this.bandCount).reversed().any {
-        bandInfo(BandIndex(it)).colorInterpolation == ColorInterpretation.AlphaBand
+        bandInfo(BandIndex(it)).colorInterpolation == ColorInterpretation.Alpha
     }
 }
