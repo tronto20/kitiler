@@ -1,29 +1,24 @@
 package dev.tronto.kitiler.core.domain
 
+@Suppress("EnumEntryName")
 enum class ColorInterpretation {
     Undefined,
     GrayIndex,
     PaletteIndex,
-    RedBand,
-    GreenBand,
-    BlueBand,
-    AlphaBand,
-    HueBand,
-    SaturationBand,
-    LightnessBand,
-    CyanBand,
-    MagentaBand,
-    YellowBand,
-    BlackBand,
-
-    @Suppress("EnumEntryName")
-    YCbCr_YBand,
-
-    @Suppress("EnumEntryName")
-    YCbCr_CrBand,
-
-    @Suppress("EnumEntryName")
-    YCbCr_CbBand,
+    Red,
+    Green,
+    Blue,
+    Alpha,
+    Hue,
+    Saturation,
+    Lightness,
+    Cyan,
+    Magenta,
+    Yellow,
+    Black,
+    YCbCr_Y,
+    YCbCr_Cr,
+    YCbCr_Cb,
     ;
 
     companion object

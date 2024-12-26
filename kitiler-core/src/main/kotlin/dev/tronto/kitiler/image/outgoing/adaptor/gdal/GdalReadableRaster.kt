@@ -220,7 +220,7 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
         kClass: KClass<T>,
     ): NDArrayImageData<T> where T : Number, T : Comparable<T> = logger.logTrace("read") {
         val alphaBand = (1..bandCount).reversed().find {
-            bandInfo(BandIndex(it)).colorInterpolation == ColorInterpretation.AlphaBand
+            bandInfo(BandIndex(it)).colorInterpolation == ColorInterpretation.Alpha
         }
         val bandList = bandIndexes?.map { it.value }?.toIntArray() ?: if (alphaBand == null) {
             IntArray(bandCount) { it + 1 }
