@@ -1,0 +1,8 @@
+dev.tronto.kitiler.spring.autoconfigure.webflux.KitilerWebAutoConfiguration
+dev.tronto.kitiler.spring.autoconfigure.core.KitilerCoreAutoConfiguration
+dev.tronto.kitiler.spring.autoconfigure.document.KitilerDocumentAutoConfiguration
+dev.tronto.kitiler.spring.autoconfigure.stat.KitilerStatAutoConfiguration
+dev.tronto.kitiler.spring.autoconfigure.image.KitilerImageAutoConfiguration
+dev.tronto.kitiler.spring.autoconfigure.image.KitilerImageRenderAutoConfiguration
+dev.tronto.kitiler.spring.autoconfigure.tile.KitilerTileAutoConfiguration
+dev.tronto.kitiler.spring.autoconfigure.wmts.KitilerWmtsAutoConfiguration

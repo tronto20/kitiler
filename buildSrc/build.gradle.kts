@@ -1,16 +1,20 @@
 import java.io.FileInputStream
-import java.util.*
+import java.util.Properties
 
 plugins {
     `kotlin-dsl`
-    `java-gradle-plugin`
 }
 
+val properties = Properties().apply {
+    FileInputStream(file("../gradle.properties")).use {
+        load(it)
+    }
+}
 repositories {
     mavenCentral()
-    gradlePluginPortal()
 }
 
+val jvmVersion = (properties["jvm.version"] as? String)?.toIntOrNull() ?: 21
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(jvmVersion)
 }

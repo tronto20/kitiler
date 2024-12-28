@@ -1,0 +1,76 @@
+<Capabilities xmlns="http://www.opengis.net/wmts/1.0"
+              xmlns:th="http://www.thymeleaf.org"
+              xmlns:ows="http://www.opengis.net/ows/1.1"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:gml="http://www.opengis.net/gml"
+              xsi:schemaLocation="http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd"
+              version="1.0.0">
+    <ows:ServiceIdentification>
+        <ows:Title th:text="${title}"/>
+        <ows:ServiceType>OGC WMTS</ows:ServiceType>
+        <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+    </ows:ServiceIdentification>
+    <ows:OperationsMetadata>
+        <ows:Operation name="GetCapabilities">
+            <ows:DCP>
+                <ows:HTTP> <!--/* th:xlink:href 사이에 공백이 들어가지 않도록 조심. */--> <!--/* requestUri 이 들어가는 부분이라 utext 는 사용하지 않음. */-->
+                    <ows:Get th:xlink:href="${requestUri}">
+                        <ows:Constraint name="GetEncoding">
+                            <ows:AllowedValues>
+                                <ows:Value>RESTful</ows:Value>
+                            </ows:AllowedValues>
+                        </ows:Constraint>
+                    </ows:Get>
+                </ows:HTTP>
+            </ows:DCP>
+        </ows:Operation>
+        <ows:Operation name="GetTile">
+            <ows:DCP>
+                <ows:HTTP>
+                    <ows:Get th:xlink:href="${requestUri}">
+                        <ows:Constraint name="GetEncoding">
+                            <ows:AllowedValues>
+                                <ows:Value>RESTful</ows:Value>
+                            </ows:AllowedValues>
+                        </ows:Constraint>
+                    </ows:Get>
+                </ows:HTTP>
+            </ows:DCP>
+        </ows:Operation>
+    </ows:OperationsMetadata>
+    <Contents>
+        <Layer th:each="layer: ${layers}">
+            <ows:Title th:text="${layer.title}"/>
+            <ows:Identifier th:text="${layer.name}"/>
+            <ows:Abstract th:text="${layer.name}"/>
+            <th:block th:utext="|<ows:${bboxCrsType} crs=&quot;${bboxCrsUri}&quot;>|"/>
+                <ows:LowerCorner th:text="|${#formats.number(layer.bounds[0])} ${#formats.number(layer.bounds[1])}|"/>
+                <ows:UpperCorner th:text="|${#formats.number(layer.bounds[2])} ${#formats.number(layer.bounds[3])}|"/>
+            <th:block th:utext="|</ows:${bboxCrsType}>|"/>
+            <Style isDefault="true">
+                <ows:Identifier>default</ows:Identifier>
+            </Style>
+            <Format th:text="${mediaType}"/>
+            <TileMatrixSetLink>
+                <TileMatrixSet th:text="${tileMatrixSet.id}"/>
+            </TileMatrixSetLink>
+            <ResourceURL th:format="${mediaType}" resourceType="tile"
+                         th:template="|${layer.tilesUrl}|"/>
+        </Layer>
+        <TileMatrixSet>
+            <ows:Identifier th:text="${tileMatrixSet.id}"/>
+            <ows:SupportedCRS th:text="${tileMatrixSet.crs}"/>
+            <TileMatrix th:each="matrix: ${tileMatrixSet.tileMatrices}">
+                <ows:Identifier th:text="${matrix.id}"/>
+                <ScaleDenominator th:text="${#formats.number(matrix.scaleDenominator)}"/>
+                <TopLeftCorner th:text="|${#formats.number(matrix.topLeftCorner[0])} ${#formats.number(matrix.topLeftCorner[1])}|"/>
+                <TileWidth th:text="${matrix.tileWidth}"/>
+                <TileHeight th:text="${matrix.tileHeight}"/>
+                <MatrixWidth th:text="${#formats.number(matrix.matrixWidth)}"/>
+                <MatrixHeight th:text="${#formats.number(matrix.matrixHeight)}"/>
+            </TileMatrix>
+        </TileMatrixSet>
+    </Contents>
+    <ServiceMetadataURL th:xlink:href="${requestUri}"/>
+</Capabilities>

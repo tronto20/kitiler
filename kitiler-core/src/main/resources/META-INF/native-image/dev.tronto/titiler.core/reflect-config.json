@@ -1,0 +1,32 @@
+[
+  {
+    "name": "dev.tronto.kitiler.wmts.service.WmtsContext",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredClasses": true
+  },
+  {
+    "name": "dev.tronto.kitiler.wmts.service.WmtsContext$Layer",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredClasses": true
+  },
+  {
+    "name": "dev.tronto.kitiler.wmts.service.WmtsContext$TileMatrix",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredClasses": true
+  },
+  {
+    "name": "dev.tronto.kitiler.wmts.service.WmtsContext$TileMatrixSet",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredClasses": true
+  },
+  {
+    "name": "dev.tronto.kitiler.document.template.Formats",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredClasses": true
+  }
+]

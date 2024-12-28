@@ -3,7 +3,8 @@ name: 'test PR'
 on:
   pull_request:
     branches:
-      - '**'
+      - 'develop'
+      - 'main'
 
 jobs:
   gradle-build:

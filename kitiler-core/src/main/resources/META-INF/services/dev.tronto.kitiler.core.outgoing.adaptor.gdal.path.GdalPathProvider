@@ -1,0 +1,5 @@
+dev.tronto.kitiler.core.outgoing.adaptor.gdal.path.DefaultCurlGdalPathProvider
+dev.tronto.kitiler.core.outgoing.adaptor.gdal.path.DefaultGSGdalPathProvider
+dev.tronto.kitiler.core.outgoing.adaptor.gdal.path.DefaultS3GdalPathProvider
+dev.tronto.kitiler.core.outgoing.adaptor.gdal.path.PublicGSGdalPathProvider
+dev.tronto.kitiler.core.outgoing.adaptor.gdal.path.PublicS3GdalPathProvider

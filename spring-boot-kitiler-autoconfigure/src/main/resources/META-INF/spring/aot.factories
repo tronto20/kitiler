@@ -1,0 +1,4 @@
+org.springframework.aot.hint.RuntimeHintsRegistrar=\
+  dev.tronto.kitiler.spring.autoconfigure.hints.KotlinSerializableRuntimeHints,\
+  dev.tronto.kitiler.spring.autoconfigure.hints.ReactorRuntimeHints,\
+  dev.tronto.kitiler.spring.autoconfigure.hints.ValueClassRuntimeHints

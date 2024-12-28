@@ -1,0 +1,2 @@
+org.springframework.aot.hint.RuntimeHintsRegistrar=\
+  dev.tronto.kitiler.spring.application.swagger.SwaggerRuntimeHints

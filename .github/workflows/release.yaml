@@ -4,12 +4,35 @@ on:
     branches:
       - main
 
-env:
-  version: ${{ github.ref_name }}
-
 jobs:
-  deploy-spring:
+  publish-maven:
     runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'adopt'
+
+      - uses: gradle/actions/setup-gradle@v3
+        name: setup gradle
+
+      - name: build and publish java artifact with gradle
+        run: |
+          ./gradlew publishAndReleaseToMavenCentral \
+            --parallel \
+            --continue \
+            -PmavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }} \
+            -PmavenCentralPassword=${{ secrets.MAVEN_CENTRAL_PASSWORD }} \
+            -PsigningInMemoryKey=${{ secrets.SIGNING_KEY }} \
+            -PsigningInMemoryKeyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}
+
+
+  publish-spring:
+    runs-on: ubuntu-latest
+    environment: release
     permissions:
       packages: write
 
@@ -24,7 +47,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
         name: setup gradle
 
-      - name: build Image with gradle
+      - name: build and publish Container Image with gradle
         run: |
           ./gradlew :spring-application:buildImage \
             --parallel \
@@ -32,12 +55,13 @@ jobs:
             -Pimage.native.enabled=false \
             -Pimage.registry.publish.username=${{github.actor}} \
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
-            -Pimage.name=ghcr.io/tronto20/kotlin-titiler \
-            -Pimage.version-tags=spring \
+            -Pimage.name=ghcr.io/tronto20/kitiler \
+            -Pimage.tags=spring-latest, spring-{VERSION} \
             -Pimage.push=true
 
-  deploy-spring-native:
+  publish-spring-native:
     runs-on: ubuntu-latest
+    environment: release
     permissions:
       packages: write
 
@@ -52,15 +76,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
         name: setup gradle
 
-      - name: build Image with gradle
+      - name: build and publish Container Image with gradle
         run: |
           ./gradlew :spring-application:buildImage \
             --parallel \
             --continue \
             -Pimage.registry.publish.username=${{github.actor}} \
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
-            -Pimage.name=ghcr.io/tronto20/kotlin-titiler \
-            -Pimage.tags=latest \
-            -Pimage.version-tags=spring-native \
-            -Pimage.default-tags=true \
+            -Pimage.name=ghcr.io/tronto20/kitiler \
+            -Pimage.tags=spring-native-latest, spring-native-{VERSION}, latest, {VERSION} \
             -Pimage.push=true
