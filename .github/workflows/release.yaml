@@ -49,7 +49,7 @@ jobs:
 
       - name: build and publish Container Image with gradle
         run: |
-          ./gradlew :spring-application:buildImage \
+          ./gradlew :kitiler-spring-application:buildImage \
             --parallel \
             --continue \
             -Pimage.native.enabled=false \
@@ -78,7 +78,7 @@ jobs:
 
       - name: build and publish Container Image with gradle
         run: |
-          ./gradlew :spring-application:buildImage \
+          ./gradlew :kitiler-spring-application:buildImage \
             --parallel \
             --continue \
             -Pimage.registry.publish.username=${{github.actor}} \
