@@ -6,8 +6,6 @@ GDAL/Spring 기반으로 동작하는 동적 타일 렌더링 서버입니다.
 
 ## Features
 
----
-
 ### core
 
 - COG (Cloud Optimized GeoTIFF) 지원
@@ -28,8 +26,6 @@ GDAL/Spring 기반으로 동작하는 동적 타일 렌더링 서버입니다.
 
 ## Modules
 
----
-
 | Module                                                                                                               | Description                           |
 |----------------------------------------------------------------------------------------------------------------------|---------------------------------------|
 | [kitiler-core](https://github.com/tronto20/kitiler/tree/main/core)                                                   | COG 영상을 대상으로 하는 동적 타일링 서비스            |
@@ -39,8 +35,6 @@ GDAL/Spring 기반으로 동작하는 동적 타일 렌더링 서버입니다.
 | [kitiler-spring-application](https://github.com/tronto20/kitiler/tree/main/spring-application)                       | spring 기반의 demo application           |
 
 ## Installation
-
----
 
 ### spring-boot
 
@@ -115,8 +109,6 @@ cd kitiler
 
 
 ## Development
-
----
 
 이 프로젝트는 IntelliJ 로 개발되고 있으며, 일관된 개발 경험을 위해 .idea/* 의 일부 파일을 vcs 로 관리합니다.
 
