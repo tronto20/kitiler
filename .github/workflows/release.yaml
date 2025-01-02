@@ -49,14 +49,14 @@ jobs:
 
       - name: build and publish Container Image with gradle
         run: |
-          ./gradlew :spring-application:buildImage \
+          ./gradlew :kitiler-spring-application:buildImage \
             --parallel \
             --continue \
             -Pimage.native.enabled=false \
             -Pimage.registry.publish.username=${{github.actor}} \
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
             -Pimage.name=ghcr.io/tronto20/kitiler \
-            -Pimage.tags=spring-latest, spring-{VERSION} \
+            -Pimage.tags=spring-latest,spring-{VERSION} \
             -Pimage.push=true
 
   publish-spring-native:
@@ -78,11 +78,11 @@ jobs:
 
       - name: build and publish Container Image with gradle
         run: |
-          ./gradlew :spring-application:buildImage \
+          ./gradlew :kitiler-spring-application:buildImage \
             --parallel \
             --continue \
             -Pimage.registry.publish.username=${{github.actor}} \
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
             -Pimage.name=ghcr.io/tronto20/kitiler \
-            -Pimage.tags=spring-native-latest, spring-native-{VERSION}, latest, {VERSION} \
+            -Pimage.tags=spring-native-latest,spring-native-{VERSION},latest,{VERSION} \
             -Pimage.push=true
