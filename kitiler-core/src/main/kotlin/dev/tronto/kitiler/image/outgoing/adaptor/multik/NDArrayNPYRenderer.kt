@@ -194,7 +194,7 @@ private class ByteArrayFileChannel(private val path: InMemoryMockPath, private v
 
     private fun expandByteArray(size: Int) {
         val newByteArray = ByteArray(size)
-        byteArray.copyInto(newByteArray, min(byteArray.size, newByteArray.size))
+        byteArray.copyInto(newByteArray, 0, 0, min(byteArray.size, newByteArray.size))
         byteArray = newByteArray
     }
 
@@ -211,7 +211,7 @@ private class ByteArrayFileChannel(private val path: InMemoryMockPath, private v
 
     override fun lock(position: Long, size: Long, shared: Boolean): FileLock? = throw NotImplementedError()
 
-    override fun implCloseChannel(): Unit = throw NotImplementedError()
+    override fun implCloseChannel(): Unit = Unit
 
     override fun transferFrom(src: ReadableByteChannel?, position: Long, count: Long): Long =
         throw NotImplementedError()
