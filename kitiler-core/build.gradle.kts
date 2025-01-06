@@ -1,55 +1,26 @@
-import com.vanniktech.maven.publish.SonatypeHost
-
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.serialization")
-    id("org.jmailen.kotlinter")
-    id("com.vanniktech.maven.publish")
-}
-
-repositories {
-    mavenCentral()
+    buildsrc.convention.`kotlin-jvm`
+    buildsrc.convention.`maven-publish`
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 dependencies {
-    implementation(platform(projects.kitilerDependencies))
-    implementation(kotlin("reflect"))
-    implementation("io.github.oshai:kotlin-logging-jvm")
-    implementation("org.slf4j:slf4j-api")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation("org.locationtech.jts:jts-core")
-    implementation("org.gdal:gdal")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
-    implementation("org.springframework:spring-core")
-    implementation("org.springframework:spring-expression")
-
-    implementation("org.jetbrains.kotlinx:multik-core")
-    implementation("org.jetbrains.kotlinx:multik-default")
-
-    implementation("org.thymeleaf:thymeleaf")
-
-    testImplementation("io.kotest:kotest-runner-junit5")
-    testImplementation("io.kotest:kotest-extensions-junit5")
-    testImplementation("io.kotest:kotest-assertions-core")
-    testImplementation("io.mockk:mockk")
-
-}
-
-val jvmVersion = (properties["jvm.version"] as? String)?.toIntOrNull() ?: 21
-kotlin {
-    jvmToolchain(jvmVersion)
-}
-
-mavenPublishing {
-    beforeEvaluate {
-        @Suppress("UnstableApiUsage")
-        pomFromGradleProperties()
+    libs.bundles.boms.get().forEach {
+        implementation(platform(it))
     }
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-    signAllPublications()
-}
+    libs.bundles.testBoms.get().forEach {
+        testImplementation(platform(it))
+    }
+    implementation(kotlin("reflect"))
+    implementation(libs.bundles.logging)
+    implementation(libs.kotlinxCoroutinesCore)
+    implementation(libs.kotlinxSerializationJson)
+    implementation(libs.jtsCore)
+    implementation(libs.gdal)
+    implementation(libs.springCore)
+    implementation(libs.springExpression)
+    implementation(libs.bundles.multik)
+    implementation(libs.thymeleaf)
 
-tasks.test {
-    useJUnitPlatform()
+    testImplementation(libs.bundles.test)
 }
