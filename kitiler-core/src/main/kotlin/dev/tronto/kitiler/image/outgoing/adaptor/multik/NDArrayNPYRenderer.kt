@@ -140,7 +140,7 @@ private class InMemoryFileSystemProvider : FileSystemProvider() {
         path: Path?,
         options: Set<OpenOption?>?,
         vararg attrs: FileAttribute<*>?,
-    ): SeekableByteChannel? = throw NotImplementedError()
+    ): SeekableByteChannel = newFileChannel(path, options, attrs = attrs)
 
     override fun newDirectoryStream(dir: Path?, filter: DirectoryStream.Filter<in Path>?): DirectoryStream<Path?>? =
         throw NotImplementedError()
@@ -163,7 +163,7 @@ private class InMemoryFileSystemProvider : FileSystemProvider() {
         path: Path?,
         options: Set<OpenOption?>?,
         vararg attrs: FileAttribute<*>?,
-    ): FileChannel? {
+    ): FileChannel {
         require(path is InMemoryMockPath)
         return ByteArrayFileChannel(path)
     }
@@ -226,7 +226,10 @@ private class ByteArrayFileChannel(private val path: InMemoryMockPath, private v
 
     override fun write(src: ByteBuffer?, position: Long): Int = throw NotImplementedError()
 
-    override fun read(dst: ByteBuffer?): Int = throw NotImplementedError()
+    override fun read(dst: ByteBuffer): Int {
+        dst.put(byteArray)
+        return byteArray.size
+    }
 
     override fun read(dsts: Array<out ByteBuffer?>?, offset: Int, length: Int): Long = throw NotImplementedError()
 
