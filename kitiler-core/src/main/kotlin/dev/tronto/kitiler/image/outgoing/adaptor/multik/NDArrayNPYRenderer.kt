@@ -189,6 +189,7 @@ private class ByteArrayFileChannel(private val path: InMemoryMockPath, private v
             expandByteArray(position + size)
         }
         src.get(byteArray, position, size)
+        position += size
         return size
     }
 
