@@ -19,12 +19,25 @@ interface ImageFormat {
         override val contentType: String = "image/jpeg"
         override val aliasNames: List<String> = listOf("jpg")
         override val aliasContentTypes: List<String> = listOf("image/jpg")
-        override fun toString(): String = AUTO.name
+        override fun toString(): String = name
     }
 
     object PNG : ImageFormat {
         override val name: String = "png"
+        override val aliasNames: List<String> = listOf("pngraw")
         override val contentType: String = "image/png"
-        override fun toString(): String = AUTO.name
+        override fun toString(): String = name
+    }
+
+    object NPY : ImageFormat {
+        override val name: String = "npy"
+        override val contentType: String = "application/x-npy"
+        override fun toString(): String = name
+    }
+
+    object NPZ : ImageFormat {
+        override val name: String = "npz"
+        override val contentType: String = "application/x-npz"
+        override fun toString(): String = name
     }
 }

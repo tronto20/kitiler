@@ -33,9 +33,6 @@ class NDArrayImageIOJpegRenderer :
 
         @JvmStatic
         private val logger = KotlinLogging.logger { }
-        init {
-            ImageIORegistrar
-        }
     }
 
     override fun getOrder(): Int = Int.MAX_VALUE
