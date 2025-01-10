@@ -1,37 +1,17 @@
-import com.vanniktech.maven.publish.SonatypeHost
-
 plugins {
-    kotlin("jvm")
-    id("org.jmailen.kotlinter")
-    id("com.vanniktech.maven.publish")
-}
-
-repositories {
-    mavenCentral()
+    buildsrc.convention.`kotlin-jvm`
+    buildsrc.convention.`maven-publish`
 }
 
 dependencies {
-    implementation(platform(projects.kitilerDependencies))
+    libs.bundles.boms.get().forEach {
+        implementation(platform(it))
+    }
     api(kotlin("reflect"))
     api(projects.kitilerCore)
     api(projects.springBootKitilerAutoconfigure)
-    api("org.thymeleaf:thymeleaf")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json")
+    api(libs.thymeleaf)
+    api(libs.kotlinxCoroutinesReactor)
+    api(libs.kotlinxSerializationJson)
 }
 
-val jvmVersion = (properties["jvm.version"] as? String)?.toIntOrNull() ?: 21
-kotlin {
-    jvmToolchain(jvmVersion)
-}
-
-
-mavenPublishing {
-    beforeEvaluate {
-        @Suppress("UnstableApiUsage")
-        pomFromGradleProperties()
-    }
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-    signAllPublications()
-}

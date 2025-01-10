@@ -1,38 +1,20 @@
-import com.vanniktech.maven.publish.SonatypeHost
-
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.spring")
-    id("org.jmailen.kotlinter")
-    id("com.vanniktech.maven.publish")
-    id("com.epages.restdocs-api-spec")
-}
-
-repositories {
-    mavenCentral()
+    buildsrc.convention.`kotlin-jvm`
+    buildsrc.convention.`maven-publish`
+//    kotlin("plugin.spring")
+    alias(libs.plugins.kotlinSpring)
+    alias(libs.plugins.restdocsApiSpec)
 }
 
 dependencies {
-    implementation(platform(projects.kitilerDependencies))
+    libs.bundles.boms.get().forEach {
+        implementation(platform(it))
+    }
     implementation(kotlin("reflect"))
     compileOnly(projects.kitilerCore)
-    compileOnly("org.thymeleaf:thymeleaf")
-    compileOnly("org.springframework:spring-webflux")
-    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json")
-    implementation("org.springframework.boot:spring-boot-autoconfigure")
+    compileOnly(libs.thymeleaf)
+    compileOnly(libs.springWebflux)
+    compileOnly(libs.kotlinxSerializationJson)
+    implementation(libs.springBootAutoConfigure)
 }
 
-val jvmVersion = (properties["jvm.version"] as? String)?.toIntOrNull() ?: 21
-kotlin {
-    jvmToolchain(jvmVersion)
-}
-
-
-mavenPublishing {
-    beforeEvaluate {
-        @Suppress("UnstableApiUsage")
-        pomFromGradleProperties()
-    }
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-    signAllPublications()
-}

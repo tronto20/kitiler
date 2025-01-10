@@ -1,0 +1,93 @@
+[versions]
+kotlin = "2.1.0"
+
+kotlinxCoroutines = "1.9.0"
+kotlinxSerialization = "1.7.3"
+
+kotlinter = "5.0.1"
+
+springBoot = "3.4.1"
+springRestdocsApiSpec = "0.19.4"
+
+graalvm = "0.10.4"
+gdal = "3.10.0"
+jts = "1.20.0"
+
+multik = "0.2.3"
+
+slf4j = "2.0.16"
+kotest = "5.9.1"
+
+[libraries]
+# plugins
+kotlinGradlePlugin = { module = "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin", version.ref = "kotlin" }
+kotlinterGradlePlugin = { module = "org.jmailen.kotlinter:org.jmailen.kotlinter.gradle.plugin", version.ref = "kotlinter" }
+mavenPublishGradlePlugin = { module = "com.vanniktech.maven.publish:com.vanniktech.maven.publish.gradle.plugin", version = "0.30.0" }
+
+# kotlin
+kotlinxCoroutinesBom = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-bom", version.ref = "kotlinxCoroutines" }
+kotlinxCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
+kotlinxCoroutinesReactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor" }
+kotlinxSerializationBom = { module = "org.jetbrains.kotlinx:kotlinx-serialization-bom", version.ref = "kotlinxSerialization" }
+kotlinxSerializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json" }
+
+# multik
+multikCore = { module = "org.jetbrains.kotlinx:multik-core", version.ref = "multik" }
+multikDefault = { module = "org.jetbrains.kotlinx:multik-default", version.ref = "multik" }
+
+# spring
+springBootDependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
+springBootWebflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
+springBootAutoConfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
+springBootTest = { module = "org.springframework.boot:spring-boot-starter-test" }
+
+springCore = { module = "org.springframework:spring-core" }
+springExpression = { module = "org.springframework:spring-expression" }
+springWebflux = { module = "org.springframework:spring-webflux" }
+springRestdocsWebTestClient = { module = "org.springframework.restdocs:spring-restdocs-webtestclient" }
+
+thymeleaf = { module = "org.thymeleaf:thymeleaf" }
+
+# restdocs-api-spec
+restdocsApiSpec = { module = "com.epages:restdocs-api-spec", version.ref = "springRestdocsApiSpec" }
+restdocsApiSpecWebTestClient = { module = "com.epages:restdocs-api-spec-webtestclient", version.ref = "springRestdocsApiSpec" }
+
+# slf4j
+slf4jBom = { module = "org.slf4j:slf4j-bom", version.ref = "slf4j" }
+slf4jApi = { module = "org.slf4j:slf4j-api" }
+kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.3" }
+
+
+# geometry
+jtsCore = { module = "org.locationtech.jts:jts-core", version.ref = "jts" }
+jtsIo = { module = "org.locationtech.jts.io:jts-io-common", version.ref = "jts" }
+gdal = { module = "org.gdal:gdal", version.ref = "gdal" }
+
+swaggerParser = { module = "io.swagger.parser.v3:swagger-parser", version = "2.1.18" }
+
+# kotest
+kotestBom = { module = "io.kotest:kotest-bom", version.ref = "kotest" }
+kotestRunner = { module = "io.kotest:kotest-runner-junit5" }
+kotestExtensions = { module = "io.kotest:kotest-extensions-junit5" }
+kotestAssertions = { module = "io.kotest:kotest-assertions-core" }
+mockk = { module = "io.mockk:mockk", version = "1.13.13" }
+
+kotestSpring = { module = "io.kotest.extensions:kotest-extensions-spring", version = "1.3.0" }
+mockkSpring = { module = "com.ninja-squad:springmockk", version = "4.0.2" }
+
+
+[bundles]
+boms = ["kotlinxCoroutinesBom", "kotlinxSerializationBom", "slf4jBom", "springBootDependencies"]
+logging = ["slf4jApi", "kotlinLogging"]
+multik = ["multikCore", "multikDefault"]
+
+testBoms = ["kotestBom"]
+test = ["kotestRunner", "kotestExtensions", "kotestAssertions", "mockk"]
+springTest = ["kotestSpring", "mockkSpring", "springBootTest"]
+
+[plugins]
+kotlinSpring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
+graalvm = { id = "org.graalvm.buildtools.native", version.ref = "graalvm" }
+restdocsApiSpec = { id = "com.epages.restdocs-api-spec", version.ref = "springRestdocsApiSpec" }

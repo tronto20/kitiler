@@ -4,16 +4,15 @@ import org.springframework.boot.gradle.tasks.bundling.BootArchive
 import org.springframework.boot.gradle.tasks.bundling.DockerSpec.DockerRegistrySpec
 
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.spring")
-    kotlin("plugin.serialization")
-    id("org.springframework.boot")
-    id("org.graalvm.buildtools.native") apply false
-    id("org.jmailen.kotlinter")
-    id("com.epages.restdocs-api-spec")
+    buildsrc.convention.`kotlin-jvm`
+    alias(libs.plugins.kotlinSpring)
+    alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.springBoot)
+    alias(libs.plugins.graalvm) apply false
+    alias(libs.plugins.restdocsApiSpec)
 }
 
-val jvmVersion = (properties["jvm.version"] as? String)?.toIntOrNull() ?: 21
+val jvmVersion = (properties["jvm.version"] as? String)?.toIntOrNull() ?: 17
 
 if (properties["image.debug.enabled"].toString().toBoolean()) {
     afterEvaluate {
@@ -34,30 +33,25 @@ if (properties["image.debug.enabled"].toString().toBoolean()) {
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
-    implementation(platform(projects.kitilerDependencies))
-    implementation("io.github.oshai:kotlin-logging-jvm")
-    implementation("io.swagger.parser.v3:swagger-parser")
-    implementation(projects.springBootKitilerStarterCore)
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-
-    testImplementation("org.springframework.boot:spring-boot-starter-test") {
-        exclude(module = "mockito-core")
+    libs.bundles.boms.get().forEach {
+        implementation(platform(it))
     }
-    testImplementation("org.locationtech.jts:jts-core")
-    testImplementation("io.kotest:kotest-runner-junit5")
-    testImplementation("io.kotest:kotest-extensions-junit5")
-    testImplementation("io.kotest:kotest-assertions-core")
-    testImplementation("io.kotest.extensions:kotest-extensions-spring")
-    testImplementation("io.mockk:mockk")
-    testImplementation("org.springframework.restdocs:spring-restdocs-webtestclient")
-    testImplementation("com.ninja-squad:springmockk")
-    testImplementation("com.epages:restdocs-api-spec")
-    testImplementation("com.epages:restdocs-api-spec-webtestclient")
+    libs.bundles.testBoms.get().forEach {
+        testImplementation(platform(it))
+    }
+    implementation(libs.bundles.logging)
+    implementation(projects.springBootKitilerStarterCore)
+    implementation(libs.swaggerParser)
+    implementation(libs.springBootWebflux)
+
+    testImplementation(libs.bundles.test)
+    testImplementation(libs.bundles.springTest)
+    testImplementation(libs.jtsCore)
+
+    testImplementation(libs.springRestdocsWebTestClient)
+    testImplementation(libs.restdocsApiSpec)
+    testImplementation(libs.restdocsApiSpecWebTestClient)
 }
 
 val runImageName = "docker.io/library/kitiler-spring-application-runner:latest"
@@ -74,14 +68,16 @@ val buildRunnerImageTask = tasks.register("buildRunnerImage", PathExec::class.ja
         )
     )
 
-    val gdalVersion = properties["gdal.version"]
+    val gdalVersion = libs.versions.gdal.get()
     args("--build-arg")
     args("GDAL_VERSION=${gdalVersion}")
 }
 
 
 if (properties["image.native.enabled"].toString().toBoolean()) {
-    apply(plugin = "org.graalvm.buildtools.native")
+    apply {
+        this.plugin(libs.plugins.graalvm.get().pluginId)
+    }
     afterEvaluate {
         tasks.bootBuildImage {
             val customEnvs = mutableMapOf<String, String>()
@@ -129,10 +125,6 @@ tasks.bootBuildImage {
     environment.set(envs)
 }
 
-kotlin {
-    jvmToolchain(jvmVersion)
-}
-
 tasks.register("buildImage") {
     group = "build"
     dependsOn(tasks.bootBuildImage)
@@ -169,10 +161,6 @@ afterEvaluate {
         setDependsOn(
             dependsOn.filterIsInstance<Provider<Task>>().filter { it.get().name !in disableLintTasks.map { it.name } })
     }
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
 
 val buildDocsTask = tasks.create("buildDocs") {
