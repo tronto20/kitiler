@@ -10,7 +10,7 @@ springBoot = "3.4.1"
 springRestdocsApiSpec = "0.19.4"
 
 graalvm = "0.10.4"
-gdal = "3.10.0"
+gdal = "3.10.1"
 jts = "1.20.0"
 
 multik = "0.2.3"
