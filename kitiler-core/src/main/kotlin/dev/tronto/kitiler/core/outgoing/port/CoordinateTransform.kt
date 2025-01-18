@@ -1,47 +1,24 @@
 package dev.tronto.kitiler.core.outgoing.port
 
-import org.locationtech.jts.geom.CoordinateXY
-import org.locationtech.jts.geom.LinearRing
-import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.Geometry
 
 interface CoordinateTransform {
     object Empty : CoordinateTransform {
-        override fun transformTo(coord: CoordinateXY): CoordinateXY = coord
+        override fun <T : Geometry> transform(geometry: T): T = geometry
 
-        override fun inverse(coord: CoordinateXY): CoordinateXY = coord
+        override fun <T : Geometry> inverse(geometry: T): T = geometry
+
+        override fun <T : Coordinate> transform(coordinate: T): T = coordinate
+
+        override fun <T : Coordinate> inverse(coordinate: T): T = coordinate
     }
 
-    fun transformTo(coord: CoordinateXY): CoordinateXY
+    fun <T : Geometry> transform(geometry: T): T
 
-    fun transformTo(linearRing: LinearRing): LinearRing = linearRing.factory.createLinearRing(
-        linearRing.coordinates.map {
-            transformTo(CoordinateXY(it))
-        }.toTypedArray()
-    )
+    fun <T : Coordinate> transform(coordinate: T): T
 
-    fun transformTo(polygon: Polygon): Polygon {
-        val exteriorRing = transformTo(polygon.exteriorRing)
-        val interiorRings = (0..<polygon.numInteriorRing).map { interiorRingIndex ->
-            transformTo(polygon.getInteriorRingN(interiorRingIndex))
-        }
+    fun <T : Geometry> inverse(geometry: T): T
 
-        return polygon.factory.createPolygon(exteriorRing, interiorRings.toTypedArray())
-    }
-
-    fun inverse(coord: CoordinateXY): CoordinateXY
-
-    fun inverse(linearRing: LinearRing): LinearRing = linearRing.factory.createLinearRing(
-        linearRing.coordinates.map {
-            inverse(CoordinateXY(it))
-        }.toTypedArray()
-    )
-
-    fun inverse(polygon: Polygon): Polygon {
-        val exteriorRing = inverse(polygon.exteriorRing)
-        val interiorRings = (0..<polygon.numInteriorRing).map { interiorRingIndex ->
-            inverse(polygon.getInteriorRingN(interiorRingIndex))
-        }
-
-        return polygon.factory.createPolygon(exteriorRing, interiorRings.toTypedArray())
-    }
+    fun <T : Coordinate> inverse(coordinate: T): T
 }

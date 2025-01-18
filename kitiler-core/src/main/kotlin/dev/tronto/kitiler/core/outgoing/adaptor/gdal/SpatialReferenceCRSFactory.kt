@@ -10,7 +10,7 @@ import org.gdal.osr.osr
 object SpatialReferenceCRSFactory : CRSFactory {
     private val spatialRefCache = mutableMapOf<String, SpatialReference>()
 
-    override fun create(crsString: String): SpatialReferenceCRS {
+    override fun create(crsString: String): CRS {
         val spatialReference = spatialRefCache.getOrPut(crsString) {
             kotlin.runCatching {
                 SpatialReference().apply {
@@ -31,7 +31,7 @@ object SpatialReferenceCRSFactory : CRSFactory {
         val targetCrs = if (crs is SpatialReferenceCRS) {
             crs
         } else {
-            create(crs.input)
+            create(crs.input) as SpatialReferenceCRS
         }
         val resultSrs = geoGraphicRefCache.getOrPut(targetCrs.srs) {
             targetCrs.srs.CloneGeogCS()
@@ -48,12 +48,12 @@ object SpatialReferenceCRSFactory : CRSFactory {
         val sourceCRS = if (source is SpatialReferenceCRS) {
             source
         } else {
-            create(source.proj4)
+            create(source.proj4) as SpatialReferenceCRS
         }
         val destinationCRS = if (destination is SpatialReferenceCRS) {
             destination
         } else {
-            create(destination.proj4)
+            create(destination.proj4) as SpatialReferenceCRS
         }
         val transform = transformationCache.getOrPut(sourceCRS.proj4 to destinationCRS.proj4) {
             CoordinateTransformation(sourceCRS.srs, destinationCRS.srs)

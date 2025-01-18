@@ -15,7 +15,7 @@ dependencies {
     implementation(libs.bundles.logging)
     implementation(libs.kotlinxCoroutinesCore)
     implementation(libs.kotlinxSerializationJson)
-    implementation(libs.jtsCore)
+    implementation(libs.bundles.jts)
     implementation(libs.gdal)
     implementation(libs.springCore)
     implementation(libs.springExpression)

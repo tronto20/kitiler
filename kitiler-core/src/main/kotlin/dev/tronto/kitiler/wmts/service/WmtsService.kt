@@ -129,10 +129,10 @@ class WmtsService(
 
         val useEPSGOption: UseEPSGOption? = wmtsOptions.getOrNull()
 
-        val upperLeft = tileMatrixSetGeographicCrsTransform.transformTo(
+        val upperLeft = tileMatrixSetGeographicCrsTransform.transform(
             CoordinateXY(tileInfo.info.bounds[0], tileInfo.info.bounds[1])
         )
-        val lowerRight = tileMatrixSetGeographicCrsTransform.transformTo(
+        val lowerRight = tileMatrixSetGeographicCrsTransform.transform(
             CoordinateXY(tileInfo.info.bounds[2], tileInfo.info.bounds[3])
         )
         val bounds = doubleArrayOf(upperLeft.x, upperLeft.y, lowerRight.x, lowerRight.y)
