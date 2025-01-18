@@ -61,6 +61,8 @@ kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.
 # geometry
 jtsCore = { module = "org.locationtech.jts:jts-core", version.ref = "jts" }
 jtsIo = { module = "org.locationtech.jts.io:jts-io-common", version.ref = "jts" }
+jtsProj = { module = "org.locationtech.proj4j:proj4j", version = "1.3.0" }
+jtsProjEpsg = { module = "org.locationtech.proj4j:proj4j-epsg", version = "1.3.0" }
 gdal = { module = "org.gdal:gdal", version.ref = "gdal" }
 
 swaggerParser = { module = "io.swagger.parser.v3:swagger-parser", version = "2.1.18" }
@@ -80,6 +82,8 @@ mockkSpring = { module = "com.ninja-squad:springmockk", version = "4.0.2" }
 boms = ["kotlinxCoroutinesBom", "kotlinxSerializationBom", "slf4jBom", "springBootDependencies"]
 logging = ["slf4jApi", "kotlinLogging"]
 multik = ["multikCore", "multikDefault"]
+
+jts = ["jtsCore", "jtsIo"]
 
 testBoms = ["kotestBom"]
 test = ["kotestRunner", "kotestExtensions", "kotestAssertions", "mockk"]

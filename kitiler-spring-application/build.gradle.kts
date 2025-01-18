@@ -47,7 +47,7 @@ dependencies {
 
     testImplementation(libs.bundles.test)
     testImplementation(libs.bundles.springTest)
-    testImplementation(libs.jtsCore)
+    testImplementation(libs.bundles.jts)
 
     testImplementation(libs.springRestdocsWebTestClient)
     testImplementation(libs.restdocsApiSpec)
