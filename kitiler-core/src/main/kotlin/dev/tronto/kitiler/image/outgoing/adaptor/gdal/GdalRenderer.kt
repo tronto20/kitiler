@@ -3,6 +3,8 @@ package dev.tronto.kitiler.image.outgoing.adaptor.gdal
 import dev.tronto.kitiler.core.domain.DataType
 import dev.tronto.kitiler.core.outgoing.adaptor.gdal.gdalConst
 import dev.tronto.kitiler.core.outgoing.adaptor.gdal.use
+import dev.tronto.kitiler.core.utils.logTrace
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.gdal.gdal.Dataset
 import org.gdal.gdal.Driver
 import org.gdal.gdal.gdal
@@ -15,6 +17,9 @@ class GdalRenderer(
     private val band: Int,
     type: DataType,
 ) : AutoCloseable {
+    companion object {
+        private val logger = KotlinLogging.logger { }
+    }
     private val driver: Driver = gdal.GetDriverByName(driverName)
     private val path: String = "/vsimem/${UUID.randomUUID()}"
     private val dataset: Dataset
@@ -33,12 +38,12 @@ class GdalRenderer(
         }
     }
 
-    fun write(data: IntArray, bands: IntArray) {
+    fun write(data: IntArray, bands: IntArray) = logger.logTrace("GdalRenderer.write()") {
         require(bands.all { it in 1..band })
         dataset.WriteRaster(0, 0, width, height, width, height, DataType.Int32.gdalConst, data, bands)
     }
 
-    fun toByteArray(): ByteArray {
+    fun toByteArray(): ByteArray = logger.logTrace("GdalRenderer.toByteArray()") {
         dataset.FlushCache()
         return if (buffered) {
             val tmpPath = "$path.tmp"
