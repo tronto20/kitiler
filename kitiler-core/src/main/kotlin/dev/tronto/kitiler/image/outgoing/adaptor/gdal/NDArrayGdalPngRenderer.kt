@@ -35,16 +35,23 @@ class NDArrayGdalPngRenderer : ImageRenderer {
             require(imageData is NDArrayImageData<*>)
             val data = imageData.data as D3Array<Int>
             val mask = imageData.mask
-            return GdalRenderer("PNG", imageData.width, imageData.height, imageData.band, imageData.dataType).use {
-                val d3 = when (imageData.band) {
-                    1 -> mask.expandDims(0)
-                    3 -> mk.stack(mask, mask, mask)
-                    4 -> mk.stack(mask, mask, mask, mask)
-                    else -> throw IllegalStateException("Unsupported mask band: ${imageData.band}")
-                }
-                val dataArray = data.times(d3).toIntArray()
-                it.write(dataArray, IntArray(imageData.band) { it + 1 })
-                it.toByteArray()
+
+            val d3 = when (imageData.band) {
+                1 -> mask.expandDims(0)
+                3 -> mk.stack(mask, mask, mask)
+                4 -> mk.stack(mask, mask, mask, mask)
+                else -> throw IllegalStateException("Unsupported mask band: ${imageData.band}")
+            }
+            val dataArray = data.times(d3).toIntArray()
+            return render(
+                "PNG",
+                imageData.width,
+                imageData.height,
+                imageData.band,
+                imageData.dataType,
+                "image"
+            ) {
+                write(dataArray, IntArray(imageData.band) { it + 1 })
             }
         }
 }

@@ -8,7 +8,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.gdal.gdal.Dataset
 import org.gdal.gdal.Driver
 import org.gdal.gdal.gdal
-import java.util.UUID
 
 class GdalRenderer(
     driverName: String,
@@ -16,23 +15,25 @@ class GdalRenderer(
     private val height: Int,
     private val band: Int,
     type: DataType,
+    name: String,
 ) : AutoCloseable {
     companion object {
         private val logger = KotlinLogging.logger { }
     }
+
     private val driver: Driver = gdal.GetDriverByName(driverName)
-    private val path: String = "/vsimem/${UUID.randomUUID()}"
+    private val path: String = "/vsimem/$name"
     private val dataset: Dataset
     private val buffered: Boolean
 
     init {
-        if (driver.canCreate) {
-            dataset = driver.Create(path, width, height, band, type.gdalConst)
-            buffered = false
-        } else if (driver.canCreateCopy) {
+        if (driver.canCreateCopy) {
             dataset = gdal.GetDriverByName("Mem")
                 .Create(path, width, height, band, type.gdalConst)
             buffered = true
+        } else if (driver.canCreate) {
+            dataset = driver.Create(path, width, height, band, type.gdalConst)
+            buffered = false
         } else {
             throw IllegalArgumentException("driver $driverName cannot create dataset.")
         }
@@ -61,4 +62,29 @@ class GdalRenderer(
         dataset.delete()
         gdal.Unlink(path)
     }
+}
+
+/**
+ *
+ *  하나의 쓰레드에서 작업하는 것을 보장하기 위한 함수. [name] 이 같을 경우에 유용하게 사용할 수 있음.
+ *  /vsimem 의 데이터셋 이름은 쓰레드별로 구분되기 때문에 쓰레드 구분이 필요
+ */
+fun render(
+    driverName: String,
+    width: Int,
+    height: Int,
+    band: Int,
+    type: DataType,
+    name: String,
+    block: GdalRenderer.() -> Unit,
+): ByteArray = GdalRenderer(
+    driverName,
+    width,
+    height,
+    band,
+    type,
+    name
+).use {
+    it.block()
+    it.toByteArray()
 }
