@@ -97,6 +97,27 @@ operator fun DataType.Companion.get(gdalConst: Int): DataType = when (gdalConst)
     else -> throw IllegalArgumentException("Invalid gdalConst for DataType: $gdalConst")
 }
 
+val ColorInterpretation.gdalConst: Int
+    get() = when (this) {
+        ColorInterpretation.Undefined -> org.gdal.gdalconst.gdalconst.GCI_Undefined
+        ColorInterpretation.GrayIndex -> org.gdal.gdalconst.gdalconst.GCI_GrayIndex
+        ColorInterpretation.PaletteIndex -> org.gdal.gdalconst.gdalconst.GCI_PaletteIndex
+        ColorInterpretation.Red -> org.gdal.gdalconst.gdalconst.GCI_RedBand
+        ColorInterpretation.Green -> org.gdal.gdalconst.gdalconst.GCI_GreenBand
+        ColorInterpretation.Blue -> org.gdal.gdalconst.gdalconst.GCI_BlueBand
+        ColorInterpretation.Alpha -> org.gdal.gdalconst.gdalconst.GCI_AlphaBand
+        ColorInterpretation.Hue -> org.gdal.gdalconst.gdalconst.GCI_HueBand
+        ColorInterpretation.Saturation -> org.gdal.gdalconst.gdalconst.GCI_SaturationBand
+        ColorInterpretation.Lightness -> org.gdal.gdalconst.gdalconst.GCI_LightnessBand
+        ColorInterpretation.Cyan -> org.gdal.gdalconst.gdalconst.GCI_CyanBand
+        ColorInterpretation.Magenta -> org.gdal.gdalconst.gdalconst.GCI_MagentaBand
+        ColorInterpretation.Yellow -> org.gdal.gdalconst.gdalconst.GCI_YellowBand
+        ColorInterpretation.Black -> org.gdal.gdalconst.gdalconst.GCI_BlackBand
+        ColorInterpretation.YCbCr_Y -> org.gdal.gdalconst.gdalconst.GCI_YCbCr_YBand
+        ColorInterpretation.YCbCr_Cr -> org.gdal.gdalconst.gdalconst.GCI_YCbCr_CrBand
+        ColorInterpretation.YCbCr_Cb -> org.gdal.gdalconst.gdalconst.GCI_YCbCr_CbBand
+    }
+
 operator fun ColorInterpretation.Companion.get(gdalConst: Int): ColorInterpretation = when (gdalConst) {
     org.gdal.gdalconst.gdalconst.GCI_Undefined -> ColorInterpretation.Undefined
     org.gdal.gdalconst.gdalconst.GCI_GrayIndex -> ColorInterpretation.GrayIndex

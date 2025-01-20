@@ -19,6 +19,7 @@ import org.locationtech.jts.algorithm.locate.IndexedPointInAreaLocator
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Location
+import java.nio.IntBuffer
 
 /**
  *  mask 는 0 이 유효하지 않은 값, 1이 유효한 값.
@@ -34,7 +35,7 @@ sealed class NDArrayImageData<T>(
         private val logger = KotlinLogging.logger { }
     }
 
-    final override val band
+    final override val bandCount
         get() = data.shape[0]
 
     final override val width
@@ -105,7 +106,7 @@ sealed class NDArrayImageData<T>(
                     }
 
                     val rescaled = rescaleToInt(rangeFrom, rangeTo)
-                    IntImageData(rescaled, mask, dataType, *getAllOptionProviders().toTypedArray())
+                    IntImageData(rescaled, mask, dataType, bandInfo, *getAllOptionProviders().toTypedArray())
                 }
 
                 DataType.UInt32,
@@ -188,4 +189,6 @@ sealed class NDArrayImageData<T>(
 
             else -> throw UnsupportedOperationException("${this.dataType} is not supported.")
         }
+
+    override fun getMaskBuffer(): IntBuffer = IntBuffer.wrap(mask.toIntArray())
 }

@@ -1,5 +1,6 @@
 package dev.tronto.kitiler.image.outgoing.adaptor.gdal
 
+import dev.tronto.kitiler.core.domain.ColorInterpretation
 import dev.tronto.kitiler.core.domain.DataType
 import dev.tronto.kitiler.core.outgoing.adaptor.gdal.gdalConst
 import dev.tronto.kitiler.core.outgoing.adaptor.gdal.handleError
@@ -50,6 +51,12 @@ class GdalRenderer private constructor(
         require(bands.all { it in 1..band })
         dataset.handleError {
             WriteRaster(0, 0, width, height, width, height, DataType.Int32.gdalConst, data, bands)
+        }
+    }
+
+    fun setColorInterpretation(band: Int, colorInterpretation: ColorInterpretation) {
+        dataset.GetRasterBand(band).use { rasterBand ->
+            rasterBand.SetColorInterpretation(colorInterpretation.gdalConst)
         }
     }
 

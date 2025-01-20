@@ -25,7 +25,7 @@ class NDArrayGdalJpegRenderer : ImageRenderer {
 
     override fun supports(imageData: ImageData, format: ImageFormat): Boolean = format == ImageFormat.JPEG &&
         imageData.dataType == DataType.UInt8 &&
-        imageData.band in SUPPORT_BAND
+        imageData.bandCount in SUPPORT_BAND
 
     override suspend fun render(imageData: ImageData, format: ImageFormat): ByteArray =
         logger.logTrace("Render Gdal Jpeg") {

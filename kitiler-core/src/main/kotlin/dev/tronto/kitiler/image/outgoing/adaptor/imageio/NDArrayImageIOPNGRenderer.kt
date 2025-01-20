@@ -40,7 +40,7 @@ class NDArrayImageIOPNGRenderer :
         format == ImageFormat.PNG &&
         imageData.data.shape.size == 3 &&
         imageData.dataType in SUPPORT_DATATYPE &&
-        imageData.band in SUPPORT_BAND
+        imageData.bandCount in SUPPORT_BAND
 
     override suspend fun render(imageData: ImageData, format: ImageFormat): ByteArray {
         require(supports(imageData, format))

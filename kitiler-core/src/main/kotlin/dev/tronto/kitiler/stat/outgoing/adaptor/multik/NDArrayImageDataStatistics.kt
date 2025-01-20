@@ -55,7 +55,7 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
             }
             if (validPixels == 0) {
                 // 유효한 값이 없을 경우.
-                (0..<imageData.band).map {
+                (0..<imageData.bandCount).map {
                     BandStatistics(
                         BandIndex(it + 1),
                         0.0,
@@ -79,7 +79,7 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                     DataType.IntDataType -> {
                         val dataArray = (imageData.data as D3Array<Int>).toIntArray()
                         val bandSize = imageData.width * imageData.height
-                        (0..<imageData.band).map { band ->
+                        (0..<imageData.bandCount).map { band ->
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Int, Int>()
                                 val offset = band * bandSize
@@ -162,7 +162,7 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                     DataType.LongDataType -> {
                         val dataArray = (imageData.data as D3Array<Long>).toLongArray()
                         val bandSize = imageData.width * imageData.height
-                        (0..<imageData.band).map { band ->
+                        (0..<imageData.bandCount).map { band ->
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Long, Int>()
                                 val offset = band * bandSize
@@ -244,7 +244,7 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                     DataType.FloatDataType -> {
                         val dataArray = (imageData.data as D3Array<Float>).toFloatArray()
                         val bandSize = imageData.width * imageData.height
-                        (0..<imageData.band).map { band ->
+                        (0..<imageData.bandCount).map { band ->
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Float, Int>()
                                 val offset = band * bandSize
@@ -326,7 +326,7 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                     DataType.DoubleDataType -> {
                         val dataArray = (imageData.data as D3Array<Double>).toDoubleArray()
                         val bandSize = imageData.width * imageData.height
-                        (0..<imageData.band).map { band ->
+                        (0..<imageData.bandCount).map { band ->
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Double, Int>()
                                 val offset = band * bandSize

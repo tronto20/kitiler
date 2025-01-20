@@ -41,7 +41,7 @@ class NDArrayImageIOJpegRenderer :
     override fun supports(imageData: ImageData, format: ImageFormat): Boolean = imageData is NDArrayImageData<*> &&
         format == ImageFormat.JPEG &&
         imageData.dataType in SUPPORT_DATATYPE &&
-        imageData.band in SUPPORT_BAND
+        imageData.bandCount in SUPPORT_BAND
 
     override suspend fun render(imageData: ImageData, format: ImageFormat): ByteArray {
         require(supports(imageData, format))

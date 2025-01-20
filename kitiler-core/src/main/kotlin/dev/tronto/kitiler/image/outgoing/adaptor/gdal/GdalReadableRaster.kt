@@ -284,12 +284,16 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
             kClass
         )
 
+        val bandInfo = bandList.map {
+            bandInfo(BandIndex(it))
+        }
+
         @Suppress("UNCHECKED_CAST")
         val imageData = when (kClass) {
-            Int::class -> IntImageData(resultData as D3Array<Int>, resultMask, dataType)
-            Long::class -> LongImageData(resultData as D3Array<Long>, resultMask, dataType)
-            Float::class -> FloatImageData(resultData as D3Array<Float>, resultMask, dataType)
-            Double::class -> DoubleImageData(resultData as D3Array<Double>, resultMask, dataType)
+            Int::class -> IntImageData(resultData as D3Array<Int>, resultMask, dataType, bandInfo)
+            Long::class -> LongImageData(resultData as D3Array<Long>, resultMask, dataType, bandInfo)
+            Float::class -> FloatImageData(resultData as D3Array<Float>, resultMask, dataType, bandInfo)
+            Double::class -> DoubleImageData(resultData as D3Array<Double>, resultMask, dataType, bandInfo)
             else -> throw UnsupportedOperationException()
         }
 
