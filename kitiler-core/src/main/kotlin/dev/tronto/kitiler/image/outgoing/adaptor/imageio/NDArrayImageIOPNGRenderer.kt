@@ -31,9 +31,6 @@ class NDArrayImageIOPNGRenderer :
 
         @JvmStatic
         private val ALPHA_VALUE = 255
-        init {
-            ImageIORegistrar
-        }
     }
 
     override fun getOrder(): Int = Int.MAX_VALUE

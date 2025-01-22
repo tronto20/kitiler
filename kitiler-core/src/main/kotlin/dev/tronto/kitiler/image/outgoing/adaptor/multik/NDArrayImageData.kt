@@ -10,7 +10,6 @@ import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.D3Array
-import org.jetbrains.kotlinx.multik.ndarray.operations.all
 import org.jetbrains.kotlinx.multik.ndarray.operations.mapMultiIndexed
 import org.jetbrains.kotlinx.multik.ndarray.operations.toDoubleArray
 import org.jetbrains.kotlinx.multik.ndarray.operations.toFloatArray
@@ -44,7 +43,15 @@ sealed class NDArrayImageData<T>(
     final override val height
         get() = data.shape[1]
 
-    final override val masked: Boolean by lazy { mask.all { true } }
+    final override val masked: Boolean by lazy {
+        val maskArray = mask.toIntArray()
+        for (i in maskArray.indices) {
+            if (maskArray[i] == 0) {
+                return@lazy true
+            }
+        }
+        return@lazy false
+    }
 
     init {
         val maskShape = mask.shape

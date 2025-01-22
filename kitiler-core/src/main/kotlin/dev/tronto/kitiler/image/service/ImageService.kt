@@ -54,10 +54,10 @@ class ImageService(
              *  1. polygon crs -> image crs
              *  2. image crs -> pixel crs
              */
-            val polygonCRS = crsFactory.create(featureOption.crsString)
-            val rasterCRSTransform = crsFactory.transformTo(polygonCRS, raster.crs)
-            val polygon = rasterCRSTransform.transformTo(featureOption.polygon)
-            raster.pixelCoordinateTransform.transformTo(polygon)
+            val featureCrs = crsFactory.create(featureOption.crsString)
+            val rasterCRSTransform = crsFactory.transformTo(featureCrs, raster.crs)
+            val feature = rasterCRSTransform.transform(featureOption.geometry)
+            raster.pixelCoordinateTransform.transform(feature)
         }
 
         val rasterWindow = Window(0, 0, raster.width, raster.height)

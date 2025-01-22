@@ -119,7 +119,7 @@ class TileService(
             CoordinateXY(rasterCRSBounds.maxX, rasterCRSBounds.minY),
             CoordinateXY(rasterCRSBounds.maxX, rasterCRSBounds.maxY)
         ).map {
-            raster.pixelCoordinateTransform.transformTo(it)
+            raster.pixelCoordinateTransform.transform(it)
         }
 
         val rangeX = coords.minOf { it.x }.toInt()..coords.maxOf { it.x }.toInt() + 1
