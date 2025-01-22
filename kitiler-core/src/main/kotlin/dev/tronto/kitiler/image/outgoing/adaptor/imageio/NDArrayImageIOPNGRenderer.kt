@@ -33,7 +33,8 @@ class NDArrayImageIOPNGRenderer :
         private val ALPHA_VALUE = 255
     }
 
-    override fun getOrder(): Int = Int.MAX_VALUE
+    override val order: Int
+        get() = Int.MAX_VALUE
 
     override fun supports(imageData: ImageData, format: ImageFormat): Boolean = imageData is NDArrayImageData<*> &&
         format == ImageFormat.PNG &&

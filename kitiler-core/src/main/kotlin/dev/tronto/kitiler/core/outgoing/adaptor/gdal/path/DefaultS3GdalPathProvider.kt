@@ -17,7 +17,10 @@ class DefaultS3GdalPathProvider :
             }
         }
     }
-    override fun getOrder(): Int = Int.MAX_VALUE - 1
+
+    override val order: Int
+        get() = Int.MAX_VALUE
+
     override suspend fun supports(uri: URI, openOptions: OptionProvider<OpenOption>): Boolean =
         ENABLED && uri.scheme == S3GdalPath.SCHEME
 
