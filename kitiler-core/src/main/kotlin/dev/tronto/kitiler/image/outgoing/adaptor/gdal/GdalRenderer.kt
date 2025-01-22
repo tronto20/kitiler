@@ -7,6 +7,7 @@ import dev.tronto.kitiler.core.outgoing.adaptor.gdal.handleError
 import dev.tronto.kitiler.core.outgoing.adaptor.gdal.use
 import dev.tronto.kitiler.core.utils.GdalInit
 import dev.tronto.kitiler.core.utils.logTrace
+import dev.tronto.kitiler.image.domain.DataBuffer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.gdal.gdal.Dataset
 import org.gdal.gdal.Driver
@@ -51,6 +52,32 @@ class GdalRenderer private constructor(
         require(bands.all { it in 1..band })
         dataset.handleError {
             WriteRaster(0, 0, width, height, width, height, DataType.Int32.gdalConst, data, bands)
+        }
+    }
+
+    fun write(data: DataBuffer, bands: IntArray) = logger.logTrace("GdalRenderer.write()") {
+        require(bands.all { it in 1..band })
+        if (data.byteBuffer.isDirect) {
+            dataset.WriteRaster_Direct(
+                0, 0, width, height, width, height,
+                data.dataType.gdalConst, data.byteBuffer, bands
+            )
+        } else if (data.byteBuffer.hasArray()) {
+            val byteArray = data.byteBuffer.array()
+            dataset.WriteRaster(
+                0, 0, width, height, width, height,
+                data.dataType.gdalConst, byteArray, bands
+            )
+        } else {
+            data.byteBuffer.rewind()
+            val limit = data.byteBuffer.limit()
+            val byteArray = ByteArray(limit)
+            data.byteBuffer.get(byteArray)
+            dataset.WriteRaster(
+                0, 0, width, height, width, height,
+                data.dataType.gdalConst, byteArray, bands
+            )
+            data.byteBuffer.rewind()
         }
     }
 

@@ -34,6 +34,7 @@ kotlinxSerializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serializati
 # multik
 multikCore = { module = "org.jetbrains.kotlinx:multik-core", version.ref = "multik" }
 multikDefault = { module = "org.jetbrains.kotlinx:multik-default", version.ref = "multik" }
+bionpy = { module = "org.jetbrains.bio:npy", version = "0.3.5" }
 
 # spring
 springBootDependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
@@ -81,7 +82,7 @@ mockkSpring = { module = "com.ninja-squad:springmockk", version = "4.0.2" }
 [bundles]
 boms = ["kotlinxCoroutinesBom", "kotlinxSerializationBom", "slf4jBom", "springBootDependencies"]
 logging = ["slf4jApi", "kotlinLogging"]
-multik = ["multikCore", "multikDefault"]
+multik = ["multikCore", "multikDefault", "bionpy"]
 
 jts = ["jtsCore", "jtsIo"]
 

@@ -4,17 +4,10 @@ import dev.tronto.kitiler.core.domain.DataType
 import dev.tronto.kitiler.core.utils.logTrace
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.ImageFormat
-import dev.tronto.kitiler.image.outgoing.adaptor.multik.NDArrayImageData
 import dev.tronto.kitiler.image.outgoing.port.ImageRenderer
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.jetbrains.kotlinx.multik.api.mk
-import org.jetbrains.kotlinx.multik.ndarray.data.D3Array
-import org.jetbrains.kotlinx.multik.ndarray.operations.expandDims
-import org.jetbrains.kotlinx.multik.ndarray.operations.stack
-import org.jetbrains.kotlinx.multik.ndarray.operations.times
-import org.jetbrains.kotlinx.multik.ndarray.operations.toIntArray
 
-class NDArrayGdalPngRenderer : ImageRenderer {
+class PngGdalRenderer : ImageRenderer {
     companion object {
         @JvmStatic
         private val logger = KotlinLogging.logger {}
@@ -32,26 +25,18 @@ class NDArrayGdalPngRenderer : ImageRenderer {
 
     override suspend fun render(imageData: ImageData, format: ImageFormat): ByteArray =
         logger.logTrace("Render Gdal Png") {
-            require(imageData is NDArrayImageData<*>)
-            val data = imageData.data as D3Array<Int>
-            val mask = imageData.mask
-
-            val d3 = when (imageData.band) {
-                1 -> mask.expandDims(0)
-                3 -> mk.stack(mask, mask, mask)
-                4 -> mk.stack(mask, mask, mask, mask)
-                else -> throw IllegalStateException("Unsupported mask band: ${imageData.band}")
-            }
-            val dataArray = data.times(d3).toIntArray()
+            val data = imageData.getBandBuffer()
+            val mask = imageData.getMaskBuffer()
             return GdalRenderer.render(
                 "PNG",
                 imageData.width,
                 imageData.height,
-                imageData.band,
+                imageData.bandCount + 1,
                 imageData.dataType,
                 "image.png"
             ) {
-                write(dataArray, IntArray(imageData.band) { it + 1 })
+                write(data, IntArray(imageData.bandCount) { it + 1 })
+                write(mask, intArrayOf(imageData.bandCount))
             }
         }
 }

@@ -3,13 +3,14 @@ package dev.tronto.kitiler.image.outgoing.adaptor.multik
 import dev.tronto.kitiler.core.domain.BandInfo
 import dev.tronto.kitiler.core.domain.DataType
 import dev.tronto.kitiler.core.incoming.controller.option.OptionProvider
+import dev.tronto.kitiler.core.utils.ByteBufferManager
+import dev.tronto.kitiler.image.domain.DataBuffer
 import dev.tronto.kitiler.image.domain.ImageData
+import dev.tronto.kitiler.image.domain.SimpleDataBuffer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.D3Array
 import org.jetbrains.kotlinx.multik.ndarray.operations.toDoubleArray
-import java.nio.Buffer
-import java.nio.DoubleBuffer
 
 class DoubleImageData(
     data: D3Array<Double>,
@@ -44,11 +45,10 @@ class DoubleImageData(
         vararg options: OptionProvider<*>,
     ): NDArrayImageData<Double> = DoubleImageData(data, mask, dataType, bandInfo, *options)
 
-    override fun getBandBuffers(): List<Buffer> {
-        val doubleArr = data.toDoubleArray()
-        val size = width * height
-        return (0..<bandCount).map {
-            DoubleBuffer.wrap(doubleArr, it * size, size)
-        }
+    override fun getBandBuffer(): DataBuffer {
+        val arr = data.toDoubleArray()
+        val buffer = ByteBufferManager.get(arr.size * Double.SIZE_BYTES)
+        buffer.asDoubleBuffer().put(arr)
+        return SimpleDataBuffer(buffer.rewind(), DataType.Float64)
     }
 }

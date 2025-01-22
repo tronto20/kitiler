@@ -2,11 +2,11 @@ package dev.tronto.kitiler.spring.application.image
 
 import dev.tronto.kitiler.core.domain.BandInfo
 import dev.tronto.kitiler.core.domain.DataType
+import dev.tronto.kitiler.image.domain.DataBuffer
 import dev.tronto.kitiler.image.domain.Image
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.ImageFormat
 import org.locationtech.jts.geom.Geometry
-import java.nio.Buffer
 
 val testImageData: ImageData = object : ImageData {
     override val dataType: DataType
@@ -26,11 +26,11 @@ val testImageData: ImageData = object : ImageData {
     override val bandInfo: List<BandInfo>
         get() = TODO("Not yet implemented")
 
-    override fun getMaskBuffer(): Buffer {
+    override fun getMaskBuffer(): DataBuffer {
         TODO("Not yet implemented")
     }
 
-    override fun getBandBuffers(): List<Buffer> {
+    override fun getBandBuffer(): DataBuffer {
         TODO("Not yet implemented")
     }
 }

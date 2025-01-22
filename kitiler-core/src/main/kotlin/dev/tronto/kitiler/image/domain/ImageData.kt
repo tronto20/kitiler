@@ -3,7 +3,6 @@ package dev.tronto.kitiler.image.domain
 import dev.tronto.kitiler.core.domain.BandInfo
 import dev.tronto.kitiler.core.domain.DataType
 import org.locationtech.jts.geom.Geometry
-import java.nio.Buffer
 
 interface ImageData {
     val dataType: DataType
@@ -29,6 +28,6 @@ interface ImageData {
 
     fun mask(geom: Geometry): ImageData
 
-    fun getMaskBuffer(): Buffer
-    fun getBandBuffers(): List<Buffer>
+    fun getMaskBuffer(): DataBuffer
+    fun getBandBuffer(): DataBuffer
 }
