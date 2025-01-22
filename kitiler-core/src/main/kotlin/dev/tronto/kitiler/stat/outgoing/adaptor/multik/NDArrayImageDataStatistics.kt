@@ -25,36 +25,38 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
     override suspend fun statistics(imageData: ImageData, percentiles: List<Percentile>): List<BandStatistics> =
         logger.logTrace("do statistics") {
             val mask = imageData.getMaskBuffer()
-            val maskArray = BooleanArray(imageData.height * imageData.width)
+            val validArray = BooleanArray(imageData.height * imageData.width)
             when {
                 mask.isIntArray -> {
                     val arr = mask.intArray
                     arr.indices.forEach {
-                        maskArray[it] = arr[it] != 0
+                        validArray[it] = arr[it] != 0
                     }
                 }
 
                 mask.isLongArray -> {
                     val arr = mask.longArray
                     arr.indices.forEach {
-                        maskArray[it] = arr[it] != 0L
+                        validArray[it] = arr[it] != 0L
                     }
                 }
+
                 mask.isFloatArray -> {
                     val arr = mask.floatArray
                     arr.indices.forEach {
-                        maskArray[it] = arr[it] != 0f
+                        validArray[it] = arr[it] != 0f
                     }
                 }
+
                 mask.isDoubleArray -> {
                     val arr = mask.doubleArray
                     arr.indices.forEach {
-                        maskArray[it] = arr[it] != 0.0
+                        validArray[it] = arr[it] != 0.0
                     }
                 }
             }
             val validPixels = logger.logTrace("mask check") {
-                maskArray?.count { !it } ?: (imageData.width * imageData.height)
+                validArray?.count { it } ?: (imageData.width * imageData.height)
             }
             if (validPixels == 0) {
                 // 유효한 값이 없을 경우.
@@ -72,7 +74,7 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                         0.0,
                         0,
                         0.0,
-                        maskArray?.size ?: 0,
+                        imageData.width * imageData.height,
                         0,
                         percentiles.map { BandStatistics.PercentileResult(it, 0.0) }
                     )
@@ -87,14 +89,14 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Int, Int>()
                                 val offset = band * bandSize
-                                if (maskArray == null) {
+                                if (validArray == null) {
                                     for (i in 0..<bandSize) {
                                         val value = dataArray[i + offset]
                                         valueGroup[value] = valueGroup[value]?.plus(1) ?: 1
                                     }
                                 } else {
                                     for (i in 0..<bandSize) {
-                                        if (!maskArray[i]) {
+                                        if (!validArray[i]) {
                                             continue
                                         }
                                         val value = dataArray[i + offset]
@@ -157,8 +159,8 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                                     minority = minorityValue.toDouble(),
                                     unique = unique,
                                     validPercent =
-                                    maskArray?.let { validPixels.toDouble() / (maskArray.size) * 100 } ?: 100.0,
-                                    maskedPixels = maskArray?.let { maskArray.size - validPixels } ?: 0,
+                                    validArray?.let { validPixels.toDouble() / (validArray.size) * 100 } ?: 100.0,
+                                    maskedPixels = validArray?.let { validArray.size - validPixels } ?: 0,
                                     validPixels = validPixels,
                                     percentiles = percentileMap.map {
                                         BandStatistics.PercentileResult(
@@ -178,14 +180,14 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Long, Int>()
                                 val offset = band * bandSize
-                                if (maskArray == null) {
+                                if (validArray == null) {
                                     for (i in 0..<bandSize) {
                                         val value = dataArray[i + offset]
                                         valueGroup[value] = valueGroup[value]?.plus(1) ?: 1
                                     }
                                 } else {
                                     for (i in 0..<bandSize) {
-                                        if (!maskArray[i]) {
+                                        if (!validArray[i]) {
                                             continue
                                         }
                                         val value = dataArray[i + offset]
@@ -248,8 +250,8 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                                     minority = minorityValue.toDouble(),
                                     unique = unique,
                                     validPercent =
-                                    maskArray?.let { validPixels.toDouble() / (maskArray.size) * 100 } ?: 100.0,
-                                    maskedPixels = maskArray?.let { maskArray.size - validPixels } ?: 0,
+                                    validArray?.let { validPixels.toDouble() / (validArray.size) * 100 } ?: 100.0,
+                                    maskedPixels = validArray?.let { validArray.size - validPixels } ?: 0,
                                     validPixels = validPixels,
                                     percentiles = percentileMap.map {
                                         BandStatistics.PercentileResult(
@@ -269,14 +271,14 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Float, Int>()
                                 val offset = band * bandSize
-                                if (maskArray == null) {
+                                if (validArray == null) {
                                     for (i in 0..<bandSize) {
                                         val value = dataArray[i + offset]
                                         valueGroup[value] = valueGroup[value]?.plus(1) ?: 1
                                     }
                                 } else {
                                     for (i in 0..<bandSize) {
-                                        if (!maskArray[i]) {
+                                        if (!validArray[i]) {
                                             continue
                                         }
                                         val value = dataArray[i + offset]
@@ -339,8 +341,8 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                                     minority = minorityValue.toDouble(),
                                     unique = unique,
                                     validPercent =
-                                    maskArray?.let { validPixels.toDouble() / (maskArray.size) * 100 } ?: 100.0,
-                                    maskedPixels = maskArray?.let { maskArray.size - validPixels } ?: 0,
+                                    validArray?.let { validPixels.toDouble() / (validArray.size) * 100 } ?: 100.0,
+                                    maskedPixels = validArray?.let { validArray.size - validPixels } ?: 0,
                                     validPixels = validPixels,
                                     percentiles = percentileMap.map {
                                         BandStatistics.PercentileResult(
@@ -360,14 +362,14 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Double, Int>()
                                 val offset = band * bandSize
-                                if (maskArray == null) {
+                                if (validArray == null) {
                                     for (i in 0..<bandSize) {
                                         val value = dataArray[i + offset]
                                         valueGroup[value] = valueGroup[value]?.plus(1) ?: 1
                                     }
                                 } else {
                                     for (i in 0..<bandSize) {
-                                        if (!maskArray[i]) {
+                                        if (!validArray[i]) {
                                             continue
                                         }
                                         val value = dataArray[i + offset]
@@ -430,8 +432,8 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                                     minority = minorityValue,
                                     unique = unique,
                                     validPercent =
-                                    maskArray?.let { validPixels.toDouble() / (maskArray.size) * 100 } ?: 100.0,
-                                    maskedPixels = maskArray?.let { maskArray.size - validPixels } ?: 0,
+                                    validArray?.let { validPixels.toDouble() / (validArray.size) * 100 } ?: 100.0,
+                                    maskedPixels = validArray?.let { validArray.size - validPixels } ?: 0,
                                     validPixels = validPixels,
                                     percentiles = percentileMap.map {
                                         BandStatistics.PercentileResult(

@@ -22,8 +22,9 @@ interface DataBuffer {
             require(isIntArray) {
             }
             byteBuffer.rewind()
-            val array = ArrayManager.getIntArray(byteBuffer.limit())
-            byteBuffer.asIntBuffer().get(array)
+            val buffer = byteBuffer.asIntBuffer()
+            val array = ArrayManager.getIntArray(buffer.limit())
+            buffer.get(array)
             byteBuffer.rewind()
             return array
         }
@@ -32,8 +33,9 @@ interface DataBuffer {
             require(isLongArray) {
             }
             byteBuffer.rewind()
-            val array = ArrayManager.getLongArray(byteBuffer.limit())
-            byteBuffer.asLongBuffer().get(array)
+            val buffer = byteBuffer.asLongBuffer()
+            val array = ArrayManager.getLongArray(buffer.limit())
+            buffer.get(array)
             byteBuffer.rewind()
             return array
         }
@@ -42,8 +44,9 @@ interface DataBuffer {
             require(isFloatArray) {
             }
             byteBuffer.rewind()
-            val array = ArrayManager.getFloatArray(byteBuffer.limit())
-            byteBuffer.asFloatBuffer().get(array)
+            val buffer = byteBuffer.asFloatBuffer()
+            val array = ArrayManager.getFloatArray(buffer.limit())
+            buffer.get(array)
             byteBuffer.rewind()
             return array
         }
@@ -52,8 +55,9 @@ interface DataBuffer {
             require(isDoubleArray) {
             }
             byteBuffer.rewind()
-            val array = ArrayManager.getDoubleArray(byteBuffer.limit())
-            byteBuffer.asDoubleBuffer().get(array)
+            val buffer = byteBuffer.asDoubleBuffer()
+            val array = ArrayManager.getDoubleArray(buffer.limit())
+            buffer.get(array)
             byteBuffer.rewind()
             return array
         }

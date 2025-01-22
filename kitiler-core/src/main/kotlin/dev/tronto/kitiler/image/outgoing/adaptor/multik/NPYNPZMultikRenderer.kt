@@ -1,6 +1,5 @@
 package dev.tronto.kitiler.image.outgoing.adaptor.multik
 
-import dev.tronto.kitiler.core.domain.Ordered
 import dev.tronto.kitiler.image.domain.DataBuffer
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.ImageFormat
@@ -41,9 +40,7 @@ import java.nio.file.attribute.UserPrincipalLookupService
 import java.nio.file.spi.FileSystemProvider
 import kotlin.math.min
 
-class NPYNPZMultikRenderer :
-    ImageRenderer,
-    Ordered {
+class NPYNPZMultikRenderer : ImageRenderer {
     companion object {
         @JvmStatic
         private val SUPPORT_FORMAT = listOf(ImageFormat.NPY, ImageFormat.NPZ)
@@ -60,15 +57,19 @@ class NPYNPZMultikRenderer :
                 data.isIntArray -> {
                     mergeIntData(data, mask, imageData)
                 }
+
                 data.isLongArray -> {
                     mergeLongData(data, mask, imageData)
                 }
+
                 data.isFloatArray -> {
                     mergeFloatData(data, mask, imageData)
                 }
+
                 data.isDoubleArray -> {
                     mergeDoubleData(data, mask, imageData)
                 }
+
                 else -> throw IllegalStateException("Unsupported data dataType: ${data.dataType}")
             }
             mk.writeNPY(tmpFilePath, npyData)
@@ -77,30 +78,38 @@ class NPYNPZMultikRenderer :
                 data.isIntArray -> {
                     mk.ndarray(data.intArray, imageData.bandCount, imageData.height, imageData.width)
                 }
+
                 data.isLongArray -> {
                     mk.ndarray(data.longArray, imageData.bandCount, imageData.height, imageData.width)
                 }
+
                 data.isFloatArray -> {
                     mk.ndarray(data.floatArray, imageData.bandCount, imageData.height, imageData.width)
                 }
+
                 data.isDoubleArray -> {
                     mk.ndarray(data.doubleArray, imageData.bandCount, imageData.height, imageData.width)
                 }
+
                 else -> throw IllegalStateException("Unsupported data dataType: ${data.dataType}")
             }
             val ndMask = when {
                 mask.isIntArray -> {
                     mk.ndarray(mask.intArray, imageData.height, imageData.width)
                 }
+
                 mask.isLongArray -> {
                     mk.ndarray(mask.longArray, imageData.height, imageData.width)
                 }
+
                 mask.isFloatArray -> {
                     mk.ndarray(mask.floatArray, imageData.height, imageData.width)
                 }
+
                 mask.isDoubleArray -> {
                     mk.ndarray(mask.doubleArray, imageData.height, imageData.width)
                 }
+
                 else -> throw IllegalStateException("Unsupported mask dataType: ${data.dataType}")
             }
             mk.writeNPZ(tmpFilePath, mapOf("data" to ndData, "mask" to ndMask))
@@ -144,6 +153,7 @@ class NPYNPZMultikRenderer :
                 val maskArr = mask.intArray
                 LongArray(maskArr.size) { maskArr[it].toLong() }
             }
+
             mask.isFloatArray -> {
                 val maskArr = mask.floatArray
                 LongArray(maskArr.size) { maskArr[it].toLong() }
@@ -173,6 +183,7 @@ class NPYNPZMultikRenderer :
                 val maskArr = mask.intArray
                 FloatArray(maskArr.size) { maskArr[it].toFloat() }
             }
+
             mask.isFloatArray -> {
                 mask.floatArray
             }
@@ -202,6 +213,7 @@ class NPYNPZMultikRenderer :
                 val maskArr = mask.intArray
                 DoubleArray(maskArr.size) { maskArr[it].toDouble() }
             }
+
             mask.isFloatArray -> {
                 val maskArr = mask.floatArray
                 DoubleArray(maskArr.size) { maskArr[it].toDouble() }

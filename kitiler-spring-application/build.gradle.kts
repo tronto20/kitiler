@@ -127,6 +127,7 @@ tasks.bootBuildImage {
     (properties["image.push"] as? String?)?.let { publish.set(it.toBoolean()) }
     val envs = environment.get().toMutableMap()
     envs["BP_JVM_VERSION"] = jvmVersion.toString()
+    envs["BPE_JAVA_TOOL_OPTIONS"] = "-XX:MaxDirectMemorySize=500M"
     environment.set(envs)
 }
 

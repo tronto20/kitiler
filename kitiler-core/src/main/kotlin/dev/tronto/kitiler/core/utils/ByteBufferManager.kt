@@ -1,11 +1,13 @@
 package dev.tronto.kitiler.core.utils
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
 
 object ByteBufferManager {
+    private val logger = KotlinLogging.logger { }
     private val bufferMap: MutableMap<Int, MutableList<ByteBuffer>> = mutableMapOf()
     private val sizeUsed: MutableSet<Int> = mutableSetOf()
     private var nextTarget: Set<Int> = setOf()
@@ -13,12 +15,33 @@ object ByteBufferManager {
 
     // band * height * width * dataSize (Int size) * scale average (1, 2, 4)
     private const val EXPECT_SIZE = 4 * 256 * 256 * 4 * 3
-    private val CLEAR_THRESHOLD = (ApplicationContext.memory / 3 / EXPECT_SIZE).toInt()
 
-    fun get(size: Int): ByteBuffer = bufferMap[size]?.firstOrNull() ?: ByteBuffer.allocateDirect(size)
+    private const val USE_PER_CORE = 3
+    private val DIRECT_ENABLED =
+        ApplicationContext.directMemory > EXPECT_SIZE * (ApplicationContext.core * USE_PER_CORE)
+    private val CLEAR_THRESHOLD = if (DIRECT_ENABLED) {
+        (ApplicationContext.directMemory / USE_PER_CORE / EXPECT_SIZE).toInt()
+    } else {
+        (ApplicationContext.memory / USE_PER_CORE / EXPECT_SIZE).toInt()
+    }
+
+    init {
+        if (!DIRECT_ENABLED) {
+            logger.warn {
+                "Direct memory access is disabled cause direct memory is insufficient. " +
+                    "Use -XX:MaxDirectMemorySize option for enable Direct memory access."
+            }
+        }
+    }
+
+    fun get(size: Int): ByteBuffer = bufferMap[size]?.firstOrNull()
+        ?: if (DIRECT_ENABLED) {
+            ByteBuffer.allocateDirect(size)
+        } else {
+            ByteBuffer.allocate(size)
+        }
 
     fun release(buffer: ByteBuffer) {
-        if (!buffer.isDirect) return
         CoroutineScope(Dispatchers.SingleThread).launch {
             buffer.clear()
             val size = buffer.limit()
