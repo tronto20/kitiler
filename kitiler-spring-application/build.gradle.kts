@@ -1,4 +1,5 @@
 import dev.tronto.kitiler.buildsrc.tasks.PathExec
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.springframework.boot.buildpack.platform.build.PullPolicy
 import org.springframework.boot.gradle.tasks.bundling.BootArchive
 import org.springframework.boot.gradle.tasks.bundling.DockerSpec.DockerRegistrySpec
@@ -71,6 +72,10 @@ val buildRunnerImageTask = tasks.register("buildRunnerImage", PathExec::class.ja
     val gdalVersion = libs.versions.gdal.get()
     args("--build-arg")
     args("GDAL_VERSION=${gdalVersion}")
+    if (DefaultNativePlatform.getCurrentArchitecture().isArm64) {
+        args("--build-arg")
+        args("JNI=/usr/lib/aarch64-linux-gnu/jni")
+    }
 }
 
 
