@@ -35,7 +35,8 @@ class NDArrayImageIOJpegRenderer :
         private val logger = KotlinLogging.logger { }
     }
 
-    override fun getOrder(): Int = Int.MAX_VALUE
+    override val order: Int
+        get() = Int.MAX_VALUE
 
     override fun supports(imageData: ImageData, format: ImageFormat): Boolean = imageData is NDArrayImageData<*> &&
         format == ImageFormat.JPEG &&

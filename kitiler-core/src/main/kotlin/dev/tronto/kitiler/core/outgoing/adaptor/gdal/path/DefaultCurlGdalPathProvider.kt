@@ -15,7 +15,9 @@ class DefaultCurlGdalPathProvider :
             }
         }
     }
-    override fun getOrder(): Int = Int.MAX_VALUE
+
+    override val order: Int
+        get() = Int.MAX_VALUE
 
     override suspend fun supports(uri: URI, openOptions: OptionProvider<OpenOption>): Boolean =
         ENABLED && uri.scheme in CurlGdalPath.SCHEME_LIST
