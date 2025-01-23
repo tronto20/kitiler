@@ -21,20 +21,19 @@ open class GdalRasterFactory(
 
     private fun createGdalRaster(gdalDataset: GdalDataset, vararg options: OptionProvider<*>): GdalRaster {
         val dataset = gdalDataset.dataset
-        val bandInfos = (1..gdalDataset.bandCount).map { band ->
-            dataset.GetRasterBand(band).use {
-                BandInfo(
-                    BandIndex(band),
-                    DataType[it.dataType],
-                    it.GetDescription() ?: "",
-                    ColorInterpretation[it.GetColorInterpretation()],
-                    it.GetMetadata_Dict().mapNotNull {
-                        val key = it.key as? String ?: return@mapNotNull null
-                        val value = it.value as? String ?: return@mapNotNull null
-                        key to value
-                    }.toMap()
-                )
-            }
+        val bandInfos = (1..gdalDataset.bandCount).map { bandIndex ->
+            val band = dataset.GetRasterBand(bandIndex)
+            BandInfo(
+                BandIndex(bandIndex),
+                DataType[band.dataType],
+                band.GetDescription() ?: "",
+                ColorInterpretation[band.GetColorInterpretation()],
+                band.GetMetadata_Dict().mapNotNull {
+                    val key = it.key as? String ?: return@mapNotNull null
+                    val value = it.value as? String ?: return@mapNotNull null
+                    key to value
+                }.toMap()
+            )
         }
 
         val crs = gdalDataset.getCrs(crsFactory)
@@ -44,7 +43,7 @@ open class GdalRasterFactory(
             gdalDataset.width,
             gdalDataset.height,
             gdalDataset.bandCount,
-            dataset.GetDriver().use { it.shortName },
+            dataset.GetDriver().shortName,
             gdalDataset.dataType,
             gdalDataset.pixelCoordinateTransform,
             gdalDataset.noDataValue,
