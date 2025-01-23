@@ -58,10 +58,12 @@ class GdalRenderer private constructor(
     fun write(data: DataBuffer, bands: IntArray) = logger.logTrace("GdalRenderer.write()") {
         require(bands.all { it in 1..band })
         if (data.byteBuffer.isDirect) {
+            data.byteBuffer.rewind()
             dataset.WriteRaster_Direct(
                 0, 0, width, height, width, height,
                 data.dataType.gdalConst, data.byteBuffer, bands
             )
+            data.byteBuffer.rewind()
         } else if (data.byteBuffer.hasArray()) {
             val byteArray = data.byteBuffer.array()
             dataset.WriteRaster(

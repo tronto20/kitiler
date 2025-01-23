@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 object ByteBufferManager {
     private val logger = KotlinLogging.logger { }
@@ -36,9 +37,9 @@ object ByteBufferManager {
 
     fun get(size: Int): ByteBuffer = bufferMap[size]?.firstOrNull()
         ?: if (DIRECT_ENABLED) {
-            ByteBuffer.allocateDirect(size)
+            ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder())
         } else {
-            ByteBuffer.allocate(size)
+            ByteBuffer.allocate(size).order(ByteOrder.nativeOrder())
         }
 
     fun release(buffer: ByteBuffer) {
