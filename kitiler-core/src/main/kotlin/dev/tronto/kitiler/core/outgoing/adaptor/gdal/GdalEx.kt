@@ -18,6 +18,7 @@ import dev.tronto.kitiler.core.domain.DataType.UInt64
 import dev.tronto.kitiler.core.domain.DataType.UInt8
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.gdal.gdal.MajorObject
+import org.gdal.gdal.WarpOptions
 import org.gdal.gdal.gdal
 import org.gdal.gdalconst.gdalconst
 
@@ -28,6 +29,17 @@ internal object GdalEx {
 
     @JvmStatic
     val errorCodes = listOf(gdalconst.CE_Failure, gdalconst.CE_Fatal)
+}
+
+inline fun <T> WarpOptions.use(block: (WarpOptions) -> T): T = try {
+    block(this)
+} finally {
+    try {
+        this.delete()
+    } catch (e: RuntimeException) {
+        // ignore
+        GdalEx.logger.warn(e) { "Failed to delete ${this::class.simpleName}." }
+    }
 }
 
 inline fun <O : MajorObject, T> O.use(block: (O) -> T): T = try {

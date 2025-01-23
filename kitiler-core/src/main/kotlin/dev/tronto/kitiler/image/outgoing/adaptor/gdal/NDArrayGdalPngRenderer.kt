@@ -43,13 +43,13 @@ class NDArrayGdalPngRenderer : ImageRenderer {
                 else -> throw IllegalStateException("Unsupported mask band: ${imageData.band}")
             }
             val dataArray = data.times(d3).toIntArray()
-            return render(
+            return GdalRenderer.render(
                 "PNG",
                 imageData.width,
                 imageData.height,
                 imageData.band,
                 imageData.dataType,
-                "image"
+                "image.png"
             ) {
                 write(dataArray, IntArray(imageData.band) { it + 1 })
             }
