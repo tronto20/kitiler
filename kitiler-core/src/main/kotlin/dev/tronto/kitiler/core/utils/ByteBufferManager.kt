@@ -16,31 +16,37 @@ object ByteBufferManager {
 
     // band * height * width * dataSize (Int size) * scale average (1, 2, 4)
     private const val EXPECT_SIZE = 4 * 256 * 256 * 4 * 3
-
     private const val USE_PER_CORE = 3
-    private val DIRECT_ENABLED =
-        ApplicationContext.directMemory > EXPECT_SIZE * (ApplicationContext.core * USE_PER_CORE)
-    private val CLEAR_THRESHOLD = if (DIRECT_ENABLED) {
-        (ApplicationContext.directMemory / USE_PER_CORE / EXPECT_SIZE).toInt()
-    } else {
-        (ApplicationContext.memory / USE_PER_CORE / EXPECT_SIZE).toInt()
-    }
+    private val DIRECT_ENABLED: Boolean
+    private val CLEAR_THRESHOLD: Int
 
     init {
-        if (!DIRECT_ENABLED) {
-            logger.warn {
-                "Direct memory access is disabled cause direct memory is insufficient. " +
-                    "Use -XX:MaxDirectMemorySize option for enable Direct memory access."
+        val disableDirectMemory = System.getProperty("memory.direct.disable")?.equals("true", true) == true
+        DIRECT_ENABLED = if (disableDirectMemory) {
+            false
+        } else {
+            (ApplicationContext.directMemory > EXPECT_SIZE * (ApplicationContext.core * USE_PER_CORE)).also {
+                if (!it) {
+                    logger.warn {
+                        "Direct memory access is disabled cause direct memory is insufficient. " +
+                            "Use -XX:MaxDirectMemorySize option for enable Direct memory access."
+                    }
+                }
             }
+        }
+        CLEAR_THRESHOLD = if (DIRECT_ENABLED) {
+            (ApplicationContext.directMemory / USE_PER_CORE / EXPECT_SIZE).toInt()
+        } else {
+            (ApplicationContext.memory / USE_PER_CORE / EXPECT_SIZE).toInt()
         }
     }
 
     fun get(size: Int): ByteBuffer = bufferMap[size]?.firstOrNull()
         ?: if (DIRECT_ENABLED) {
-            ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder())
+            ByteBuffer.allocateDirect(size)
         } else {
-            ByteBuffer.allocate(size).order(ByteOrder.nativeOrder())
-        }
+            ByteBuffer.allocate(size)
+        }.order(ByteOrder.nativeOrder())
 
     fun release(buffer: ByteBuffer) {
         CoroutineScope(Dispatchers.SingleThread).launch {
