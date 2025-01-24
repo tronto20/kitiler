@@ -23,7 +23,11 @@ object ArrayManager {
         @Suppress("PrivatePropertyName")
         private val CLEAR_THRESHOLD = (ApplicationContext.memory / 10 / EXPECT_SIZE).toInt()
 
-        fun get(size: Int): T = arraymap[size]?.firstOrNull() ?: init(size)
+        fun get(size: Int): T {
+            val array = arraymap[size]?.firstOrNull() ?: init(size)
+            ResourceManagerHolder.getManagerOrNull()?.onRelease { release(array) }
+            return array
+        }
 
         fun release(array: T) {
             CoroutineScope(Dispatchers.SingleThread).launch {

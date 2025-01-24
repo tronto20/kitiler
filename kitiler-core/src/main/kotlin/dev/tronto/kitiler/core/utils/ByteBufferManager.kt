@@ -41,12 +41,18 @@ object ByteBufferManager {
         }
     }
 
-    fun get(size: Int): ByteBuffer = bufferMap[size]?.firstOrNull()
-        ?: if (DIRECT_ENABLED) {
-            ByteBuffer.allocateDirect(size)
-        } else {
-            ByteBuffer.allocate(size)
-        }.order(ByteOrder.nativeOrder())
+    fun get(size: Int): ByteBuffer {
+        val buffer = bufferMap[size]?.firstOrNull()
+            ?: if (DIRECT_ENABLED) {
+                ByteBuffer.allocateDirect(size)
+            } else {
+                ByteBuffer.allocate(size)
+            }.order(ByteOrder.nativeOrder())
+
+        logger.trace { "create buffer" }
+        ResourceManagerHolder.getManagerOrNull()?.onRelease { release(buffer) }
+        return buffer
+    }
 
     fun release(buffer: ByteBuffer) {
         CoroutineScope(Dispatchers.SingleThread).launch {
@@ -58,6 +64,7 @@ object ByteBufferManager {
             if (count++ > CLEAR_THRESHOLD) {
                 clear()
             }
+            logger.trace { "release buffer" }
         }
     }
 
