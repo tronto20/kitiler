@@ -58,7 +58,7 @@ class StatisticsAutoRescale(private val statisticsUseCase: StatisticsUseCase = S
         }
 
         val bandIndexOption: BandIndexOption? = openOptions.getOrNull()
-        val bandIndexes = bandIndexOption?.bandIndexes ?: (1..imageData.band).map { BandIndex(it) }
+        val bandIndexes = bandIndexOption?.bandIndexes ?: (1..imageData.bandCount).map { BandIndex(it) }
 
         val rangeFrom = bandIndexes.map { bandIndex ->
             val percentiles = statistics.statistics.first { it.bandIndex == bandIndex }.percentiles

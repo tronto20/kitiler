@@ -16,5 +16,6 @@ dependencies {
     compileOnly(libs.springWebflux)
     compileOnly(libs.kotlinxSerializationJson)
     implementation(libs.springBootAutoConfigure)
+    implementation(libs.kotlinxCoroutinesCore)
 }
 

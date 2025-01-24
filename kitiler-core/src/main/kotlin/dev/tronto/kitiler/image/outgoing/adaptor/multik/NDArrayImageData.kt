@@ -3,11 +3,15 @@ package dev.tronto.kitiler.image.outgoing.adaptor.multik
 import dev.tronto.kitiler.core.domain.DataType
 import dev.tronto.kitiler.core.domain.OptionContext
 import dev.tronto.kitiler.core.incoming.controller.option.OptionProvider
+import dev.tronto.kitiler.core.utils.ByteBufferManager
 import dev.tronto.kitiler.core.utils.logTrace
+import dev.tronto.kitiler.image.domain.DataBuffer
 import dev.tronto.kitiler.image.domain.ImageData
+import dev.tronto.kitiler.image.domain.SimpleDataBuffer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
+import org.jetbrains.kotlinx.multik.api.ones
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.D3Array
 import org.jetbrains.kotlinx.multik.ndarray.operations.mapMultiIndexed
@@ -34,7 +38,7 @@ sealed class NDArrayImageData<T>(
         private val logger = KotlinLogging.logger { }
     }
 
-    final override val band
+    final override val bandCount
         get() = data.shape[0]
 
     final override val width
@@ -44,6 +48,9 @@ sealed class NDArrayImageData<T>(
         get() = data.shape[1]
 
     final override val masked: Boolean by lazy {
+        if (mask == null) {
+            return@lazy false
+        }
         val maskArray = mask.toIntArray()
         for (i in maskArray.indices) {
             if (maskArray[i] == 0) {
@@ -54,9 +61,8 @@ sealed class NDArrayImageData<T>(
     }
 
     init {
-        val maskShape = mask.shape
-        require(width == maskShape[1] && height == maskShape[0]) {
-            "data and mask shape must be equal. (data: ${data.shape.toList()}, mask: ${mask.shape.toList()})"
+        require(mask == null || (width == mask.shape[1] && height == mask.shape[0])) {
+            "data and mask shape must be equal. (data: ${data.shape.toList()}, mask: ${mask?.shape?.toList()})"
         }
     }
 
@@ -68,7 +74,8 @@ sealed class NDArrayImageData<T>(
 
     override fun mask(geom: Geometry): ImageData {
         val index = IndexedPointInAreaLocator(geom)
-        val mask = mask.mapMultiIndexed { (h, w), byte ->
+
+        val mask = (mask ?: mk.ones<Int>(height, width)).mapMultiIndexed { (h, w), byte ->
             if (byte == 0) {
                 byte
             } else if (index.locate(Coordinate(w.toDouble(), h.toDouble())) == Location.EXTERIOR) {
@@ -105,7 +112,7 @@ sealed class NDArrayImageData<T>(
                     }
 
                     val rescaled = rescaleToInt(rangeFrom, rangeTo)
-                    IntImageData(rescaled, mask, dataType, *getAllOptionProviders().toTypedArray())
+                    IntImageData(rescaled, mask, dataType, bandInfo, *getAllOptionProviders().toTypedArray())
                 }
 
                 DataType.UInt32,
@@ -188,4 +195,11 @@ sealed class NDArrayImageData<T>(
 
             else -> throw UnsupportedOperationException("${this.dataType} is not supported.")
         }
+
+    override fun getMaskBuffer(): DataBuffer = mask.let {
+        val intArray = it.toIntArray()
+        val byteBuf = ByteBufferManager.get(intArray.size * Int.SIZE_BYTES)
+        byteBuf.asIntBuffer().put(intArray)
+        SimpleDataBuffer(byteBuf.rewind(), DataType.Int32)
+    }
 }
