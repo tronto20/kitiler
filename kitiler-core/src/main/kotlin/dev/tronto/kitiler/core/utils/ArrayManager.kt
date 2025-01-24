@@ -1,10 +1,13 @@
 package dev.tronto.kitiler.core.utils
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 object ArrayManager {
+    private val logger = KotlinLogging.logger { }
+
     private class Manager<T>(
         dataSize: Int,
         private val init: (Int) -> T,
@@ -25,6 +28,7 @@ object ArrayManager {
 
         fun get(size: Int): T {
             val array = arraymap[size]?.firstOrNull() ?: init(size)
+            logger.trace { "create buffer" }
             ResourceManagerHolder.getManagerOrNull()?.onRelease { release(array) }
             return array
         }
@@ -39,6 +43,7 @@ object ArrayManager {
                 if (count++ > CLEAR_THRESHOLD) {
                     clear()
                 }
+                logger.trace { "release array" }
             }
         }
 
