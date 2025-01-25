@@ -26,7 +26,7 @@ val testImageData: ImageData = object : ImageData {
     override val bandInfo: List<BandInfo>
         get() = TODO("Not yet implemented")
 
-    override fun getMaskBuffer(): DataBuffer {
+    override fun getValidArray(): BooleanArray? {
         TODO("Not yet implemented")
     }
 

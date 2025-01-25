@@ -28,6 +28,6 @@ interface ImageData {
 
     fun mask(geom: Geometry): ImageData
 
-    fun getMaskBuffer(): DataBuffer
     fun getBandBuffer(): DataBuffer
+    fun getValidArray(): BooleanArray?
 }
