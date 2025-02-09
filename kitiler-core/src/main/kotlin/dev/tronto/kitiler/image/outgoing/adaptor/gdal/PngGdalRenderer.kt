@@ -4,7 +4,6 @@ import dev.tronto.kitiler.core.domain.DataType
 import dev.tronto.kitiler.core.utils.logTrace
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.ImageFormat
-import dev.tronto.kitiler.image.domain.IntArrayDataBuffer
 import dev.tronto.kitiler.image.outgoing.port.ImageRenderer
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -42,13 +41,7 @@ class PngGdalRenderer : ImageRenderer {
                         DataType.UInt16 -> 65535
                         else -> throw IllegalStateException()
                     }
-                    val maskArray = IntArray(validArray.size)
-                    for (i in validArray.indices) {
-                        if (validArray[i]) {
-                            maskArray[i] = validValue
-                        }
-                    }
-                    IntArrayDataBuffer(maskArray)
+                    validArray.toDataBuffer(validValue)
                 }
             )
         }
