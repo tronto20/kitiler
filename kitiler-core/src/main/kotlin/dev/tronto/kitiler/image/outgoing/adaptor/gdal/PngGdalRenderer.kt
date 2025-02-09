@@ -1,10 +1,10 @@
 package dev.tronto.kitiler.image.outgoing.adaptor.gdal
 
 import dev.tronto.kitiler.core.domain.DataType
-import dev.tronto.kitiler.core.utils.ArrayManager
 import dev.tronto.kitiler.core.utils.logTrace
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.ImageFormat
+import dev.tronto.kitiler.image.domain.IntArrayDataBuffer
 import dev.tronto.kitiler.image.outgoing.port.ImageRenderer
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -32,31 +32,24 @@ class PngGdalRenderer : ImageRenderer {
                 "PNG",
                 imageData.width,
                 imageData.height,
-                if (validArray == null) {
-                    imageData.bandCount
-                } else {
-                    imageData.bandCount + 1
-                },
+                imageData.bandCount,
                 imageData.dataType,
-                "image.png"
-            ) {
-                write(data, IntArray(imageData.bandCount) { it + 1 })
-                validArray?.let { _ ->
-                    val validValue = if (imageData.dataType == DataType.UInt8) {
-                        255
-                    } else if (imageData.dataType == DataType.UInt16) {
-                        65535
-                    } else {
-                        throw IllegalStateException()
+                "image.png",
+                data,
+                validArray?.let { validArray ->
+                    val validValue = when (imageData.dataType) {
+                        DataType.UInt8 -> 255
+                        DataType.UInt16 -> 65535
+                        else -> throw IllegalStateException()
                     }
-                    val maskArray = ArrayManager.getIntArray(validArray.size)
+                    val maskArray = IntArray(validArray.size)
                     for (i in validArray.indices) {
                         if (validArray[i]) {
                             maskArray[i] = validValue
                         }
                     }
-                    write(maskArray, intArrayOf(imageData.bandCount + 1))
+                    IntArrayDataBuffer(maskArray)
                 }
-            }
+            )
         }
 }

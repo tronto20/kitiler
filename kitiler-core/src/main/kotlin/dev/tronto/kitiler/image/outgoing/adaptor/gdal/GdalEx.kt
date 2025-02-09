@@ -28,7 +28,10 @@ val ResamplingAlgorithm.gdalWarpString: String
         ResamplingAlgorithm.RMS -> "rms"
         ResamplingAlgorithm.MODE -> "mode"
     }
+
+private val positiveWord = setOf("YES", "TRUE")
+
 val Driver.canCreate: Boolean
-    get() = GetMetadataItem(gdalconst.DCAP_CREATE)?.uppercase() in listOf("YES", "TRUE")
+    get() = GetMetadataItem(gdalconst.DCAP_CREATE)?.uppercase() in positiveWord
 val Driver.canCreateCopy: Boolean
-    get() = GetMetadataItem(gdalconst.DCAP_CREATECOPY)?.uppercase() in listOf("YES", "TRUE")
+    get() = GetMetadataItem(gdalconst.DCAP_CREATECOPY)?.uppercase() in positiveWord

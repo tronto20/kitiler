@@ -7,7 +7,6 @@ import dev.tronto.kitiler.core.incoming.controller.option.ArgumentType
 import dev.tronto.kitiler.core.incoming.controller.option.OpenOption
 import dev.tronto.kitiler.core.outgoing.adaptor.gdal.GdalDatasetFactory
 import dev.tronto.kitiler.core.outgoing.port.Raster
-import dev.tronto.kitiler.core.utils.ArrayManager
 import dev.tronto.kitiler.core.utils.logTrace
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.Window
@@ -40,12 +39,16 @@ import kotlin.reflect.KClass
 class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, private val raster: Raster) :
     ReadableRaster,
     Raster by raster {
+    val kClass by lazy {
+        dataType.toKClass()
+    }
+
     companion object {
         @JvmStatic
         private val logger = KotlinLogging.logger { }
     }
 
-    private fun DataType.toKotlinKClass(): KClass<out Number> = when (this) {
+    private fun DataType.toKClass(): KClass<out Number> = when (this) {
         DataType.Int8,
         DataType.UInt8,
         DataType.UInt16,
@@ -223,11 +226,12 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
         val alphaBand = (1..bandCount).reversed().find {
             bandInfo(BandIndex(it)).colorInterpolation == ColorInterpretation.Alpha
         }
-        val bandList = bandIndexes?.map { it.value }?.toIntArray() ?: if (alphaBand == null) {
-            IntArray(bandCount) { it + 1 }
-        } else {
-            (1..bandCount).filter { it != alphaBand }.toIntArray()
-        }
+        val bandList = bandIndexes?.map { it.value }?.toIntArray()
+            ?: if (alphaBand == null) {
+                IntArray(bandCount) { it + 1 }
+            } else {
+                (1..bandCount).filter { it != alphaBand }.toIntArray()
+            }
 
         @Suppress("UNCHECKED_CAST")
         val noDataValue = when (kClass) {
@@ -246,8 +250,9 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
 
             val (data, mask) = if (alphaBandInfo.dataType != dataType) {
                 val data = reader.readData(kClass, bandList, width, height, window).normalize()
+                val maskKClass = alphaBandInfo.dataType.toKClass()
                 val maskBand = reader.readData(
-                    alphaBandInfo.dataType.toKotlinKClass(),
+                    maskKClass,
                     intArrayOf(alphaBand),
                     width,
                     height,
@@ -290,7 +295,7 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
         }
 
         val maskIntArray = resultMask.toIntArray()
-        val validBooleanArray = ArrayManager.getBooleanArray(maskIntArray.size)
+        val validBooleanArray = BooleanArray(maskIntArray.size)
         for (i in maskIntArray.indices) {
             if (maskIntArray[i] != 0) {
                 validBooleanArray[i] = true
@@ -338,20 +343,20 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
         val upperPad = if (upperOver > 0) (upperOver * heightRatio).toInt() else 0
         val lowerPad = if (lowerOver > 0) (lowerOver * heightRatio).toInt() else 0
 
-        val newWindow = Window(
+        val windowForRead = Window(
             window.xOffset + leftOver,
             window.yOffset + upperOver,
             window.width - leftOver - rightOver,
             window.height - upperOver - lowerOver
         )
-        val newWidth = width - leftPad - rightPad
-        val newHeight = height - upperPad - lowerPad
+        val widthForRead = width - leftPad - rightPad
+        val heightForRead = height - upperPad - lowerPad
 
-        val imageData = when (dataType.toKotlinKClass()) {
+        val imageData = when (dataType.toKClass()) {
             Int::class -> read<Int>(
-                newWindow,
-                newWidth,
-                newHeight,
+                windowForRead,
+                widthForRead,
+                heightForRead,
                 bandIndexes,
                 nodata?.toInt(),
                 leftPad, rightPad, upperPad, lowerPad,
@@ -359,9 +364,9 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
             )
 
             Long::class -> read(
-                newWindow,
-                newWidth,
-                newHeight,
+                windowForRead,
+                widthForRead,
+                heightForRead,
                 bandIndexes,
                 nodata?.toLong(),
                 leftPad, rightPad, upperPad, lowerPad,
@@ -369,9 +374,9 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
             )
 
             Float::class -> read(
-                newWindow,
-                newWidth,
-                newHeight,
+                windowForRead,
+                widthForRead,
+                heightForRead,
                 bandIndexes,
                 nodata?.toFloat(),
                 leftPad, rightPad, upperPad, lowerPad,
@@ -379,9 +384,9 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
             )
 
             Double::class -> read(
-                newWindow,
-                newWidth,
-                newHeight,
+                windowForRead,
+                widthForRead,
+                heightForRead,
                 bandIndexes,
                 nodata?.toDouble(),
                 leftPad, rightPad, upperPad, lowerPad,

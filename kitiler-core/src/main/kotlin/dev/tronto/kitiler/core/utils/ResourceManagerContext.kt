@@ -4,18 +4,18 @@ import kotlinx.coroutines.ThreadContextElement
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
-class ResourceManagerContext(private val manager: ResourceManager? = ResourceManagerHolder.getManagerOrNull()) :
+class ResourceManagerContext(private val manager: ResourceContext? = ResourceContextHolder.getManagerOrNull()) :
     AbstractCoroutineContextElement(Key),
-    ThreadContextElement<ResourceManager?> {
+    ThreadContextElement<ResourceContext?> {
     companion object Key : CoroutineContext.Key<ResourceManagerContext>
 
-    override fun restoreThreadContext(context: CoroutineContext, oldState: ResourceManager?) {
-        ResourceManagerHolder.setManager(oldState)
+    override fun restoreThreadContext(context: CoroutineContext, oldState: ResourceContext?) {
+        ResourceContextHolder.setManager(oldState)
     }
 
-    override fun updateThreadContext(context: CoroutineContext): ResourceManager? {
-        val oldState = ResourceManagerHolder.getManagerOrNull()
-        ResourceManagerHolder.setManager(manager)
+    override fun updateThreadContext(context: CoroutineContext): ResourceContext? {
+        val oldState = ResourceContextHolder.getManagerOrNull()
+        ResourceContextHolder.setManager(manager)
         return oldState
     }
 }

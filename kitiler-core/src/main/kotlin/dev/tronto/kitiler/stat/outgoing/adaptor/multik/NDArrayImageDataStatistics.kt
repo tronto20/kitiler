@@ -60,7 +60,7 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                     data.isIntArray -> {
                         val dataArray = data.intArray
                         (0..<imageData.bandCount).map { band ->
-                            CoroutineScope(Dispatchers.Default + ResourceManagerContext()).async {
+                            CoroutineScope(Dispatchers.Unconfined + ResourceManagerContext()).async {
                                 val valueGroup = mutableMapOf<Int, Int>()
                                 val offset = band * bandSize
                                 if (validArray == null) {
@@ -149,7 +149,7 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                     data.isLongArray -> {
                         val dataArray = data.longArray
                         (0..<imageData.bandCount).map { band ->
-                            CoroutineScope(Dispatchers.Default).async {
+                            CoroutineScope(Dispatchers.Unconfined + ResourceManagerContext()).async {
                                 val valueGroup = mutableMapOf<Long, Int>()
                                 val offset = band * bandSize
                                 if (validArray == null) {
@@ -239,7 +239,7 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                     data.isFloatArray -> {
                         val dataArray = data.floatArray
                         (0..<imageData.bandCount).map { band ->
-                            CoroutineScope(Dispatchers.Default).async {
+                            CoroutineScope(Dispatchers.Unconfined + ResourceManagerContext()).async {
                                 val valueGroup = mutableMapOf<Float, Int>()
                                 val offset = band * bandSize
                                 if (validArray == null) {
@@ -329,7 +329,7 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                     data.isDoubleArray -> {
                         val dataArray = data.doubleArray
                         (0..<imageData.bandCount).map { band ->
-                            CoroutineScope(Dispatchers.Default).async {
+                            CoroutineScope(Dispatchers.Unconfined + ResourceManagerContext()).async {
                                 val valueGroup = mutableMapOf<Double, Int>()
                                 val offset = band * bandSize
                                 if (validArray == null) {

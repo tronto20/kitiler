@@ -1,5 +1,6 @@
 package dev.tronto.kitiler.core.outgoing.adaptor.gdal
 
+import dev.tronto.kitiler.core.exception.UnsupportedCrsStringException
 import dev.tronto.kitiler.core.outgoing.port.CRS
 import dev.tronto.kitiler.core.outgoing.port.CRSFactory
 import dev.tronto.kitiler.core.outgoing.port.CRSTransform
@@ -11,18 +12,18 @@ object SpatialReferenceCRSFactory : CRSFactory {
     private val spatialRefCache = mutableMapOf<String, SpatialReference>()
 
     override fun create(crsString: String): CRS {
-        val spatialReference = spatialRefCache.getOrPut(crsString) {
-            kotlin.runCatching {
+        kotlin.runCatching {
+            val spatialReference = spatialRefCache.getOrPut(crsString) {
                 SpatialReference().apply {
                     SetFromUserInput(crsString)
                     AutoIdentifyEPSG()
                     this.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
                 }
-            }.getOrElse {
-                throw dev.tronto.kitiler.core.exception.UnsupportedCrsStringException(crsString, it)
             }
+            return SpatialReferenceCRS(spatialReference, crsString)
+        }.getOrElse {
+            throw UnsupportedCrsStringException(crsString, it)
         }
-        return SpatialReferenceCRS(spatialReference, crsString)
     }
 
     private val geoGraphicRefCache = mutableMapOf<SpatialReference, SpatialReference>()

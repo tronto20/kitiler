@@ -3,10 +3,9 @@ package dev.tronto.kitiler.image.outgoing.adaptor.multik
 import dev.tronto.kitiler.core.domain.BandInfo
 import dev.tronto.kitiler.core.domain.DataType
 import dev.tronto.kitiler.core.incoming.controller.option.OptionProvider
-import dev.tronto.kitiler.core.utils.ByteBufferManager
 import dev.tronto.kitiler.image.domain.DataBuffer
+import dev.tronto.kitiler.image.domain.FloatArrayDataBuffer
 import dev.tronto.kitiler.image.domain.ImageData
-import dev.tronto.kitiler.image.domain.SimpleDataBuffer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.kotlinx.multik.ndarray.data.D3Array
 import org.jetbrains.kotlinx.multik.ndarray.operations.toFloatArray
@@ -46,8 +45,6 @@ class FloatImageData(
 
     override fun getBandBuffer(): DataBuffer {
         val arr = data.toFloatArray()
-        val buffer = ByteBufferManager.get(arr.size * Float.SIZE_BYTES)
-        buffer.asFloatBuffer().put(arr)
-        return SimpleDataBuffer(buffer.rewind(), DataType.Float32)
+        return FloatArrayDataBuffer(arr)
     }
 }

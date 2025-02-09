@@ -1,6 +1,5 @@
 package dev.tronto.kitiler.image.outgoing.adaptor.multik
 
-import dev.tronto.kitiler.core.utils.ArrayManager
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.ImageFormat
 import dev.tronto.kitiler.image.outgoing.port.ImageRenderer
@@ -80,67 +79,56 @@ class NPYNPZMultikRenderer : ImageRenderer {
             if (format == ImageFormat.NPY) {
                 val npyData = when {
                     data.isIntArray -> {
-                        val buffer = data.byteBuffer.asIntBuffer()
-                        val dataSize = buffer.limit()
-                        val resultArray = ArrayManager.getIntArray(dataSize + valid.size)
-                        buffer.get(resultArray)
-                        data.byteBuffer.rewind()
-                        for (i in valid.indices) {
-                            resultArray[dataSize + i] = if (valid[i]) {
-                                255
-                            } else {
-                                0
-                            }
+                        val resultDataArray = data.intArray
+                        val resultValidArray = IntArray(valid.size) {
+                            if (valid[it]) 255 else 0
                         }
-                        mk.ndarray(resultArray, imageData.bandCount + 1, imageData.height, imageData.width)
+                        mk.ndarray(
+                            resultDataArray + resultValidArray,
+                            imageData.bandCount + 1,
+                            imageData.height,
+                            imageData.width
+                        )
                     }
 
                     data.isLongArray -> {
-                        val buffer = data.byteBuffer.asLongBuffer()
-                        val dataSize = buffer.limit()
-                        val resultArray = ArrayManager.getLongArray(dataSize + valid.size)
-                        buffer.get(resultArray)
-                        data.byteBuffer.rewind()
-                        for (i in valid.indices) {
-                            resultArray[dataSize + i] = if (valid[i]) {
-                                255
-                            } else {
-                                0
-                            }
+                        val resultDataArray = data.longArray
+                        val resultValidArray = LongArray(valid.size) {
+                            if (valid[it]) 255 else 0
                         }
-                        mk.ndarray(resultArray, imageData.bandCount + 1, imageData.height, imageData.width)
+
+                        mk.ndarray(
+                            resultDataArray + resultValidArray,
+                            imageData.bandCount + 1,
+                            imageData.height,
+                            imageData.width
+                        )
                     }
 
                     data.isFloatArray -> {
-                        val buffer = data.byteBuffer.asFloatBuffer()
-                        val dataSize = buffer.limit()
-                        val resultArray = ArrayManager.getFloatArray(dataSize + valid.size)
-                        buffer.get(resultArray)
-                        data.byteBuffer.rewind()
-                        for (i in valid.indices) {
-                            resultArray[dataSize + i] = if (valid[i]) {
-                                255f
-                            } else {
-                                0f
-                            }
+                        val resultDataArray = data.floatArray
+                        val resultValidArray = FloatArray(valid.size) {
+                            if (valid[it]) 255f else 0f
                         }
-                        mk.ndarray(resultArray, imageData.bandCount + 1, imageData.height, imageData.width)
+                        mk.ndarray(
+                            resultDataArray + resultValidArray,
+                            imageData.bandCount + 1,
+                            imageData.height,
+                            imageData.width
+                        )
                     }
 
                     data.isDoubleArray -> {
-                        val buffer = data.byteBuffer.asDoubleBuffer()
-                        val dataSize = buffer.limit()
-                        val resultArray = ArrayManager.getDoubleArray(dataSize + valid.size)
-                        buffer.get(resultArray)
-                        data.byteBuffer.rewind()
-                        for (i in valid.indices) {
-                            resultArray[dataSize + i] = if (valid[i]) {
-                                255.0
-                            } else {
-                                0.0
-                            }
+                        val resultDataArray = data.doubleArray
+                        val resultValidArray = DoubleArray(valid.size) {
+                            if (valid[it]) 255.0 else 0.0
                         }
-                        mk.ndarray(resultArray, imageData.bandCount + 1, imageData.height, imageData.width)
+                        mk.ndarray(
+                            resultDataArray + resultValidArray,
+                            imageData.bandCount + 1,
+                            imageData.height,
+                            imageData.width
+                        )
                     }
 
                     else -> throw IllegalStateException("Unsupported data dataType: ${data.dataType}")
@@ -166,7 +154,7 @@ class NPYNPZMultikRenderer : ImageRenderer {
 
                     else -> throw IllegalStateException("Unsupported data dataType: ${data.dataType}")
                 }
-                val validArray = ArrayManager.getIntArray(valid.size)
+                val validArray = IntArray(valid.size)
                 for (i in valid.indices) {
                     validArray[i] = if (valid[i]) {
                         255
@@ -204,7 +192,7 @@ class NPYNPZMultikRenderer : ImageRenderer {
 
 private class InMemoryMockPath(
     val name: String,
-    var byteArray: ByteArray = ArrayManager.getByteArray(5 * 1024), // 5 kB
+    var byteArray: ByteArray = ByteArray(5 * 1024), // 5 kB
 ) : Path {
     override fun getFileSystem(): FileSystem = InMemoryFileSystem()
 
@@ -341,7 +329,7 @@ private class ByteArrayFileChannel(private val path: InMemoryMockPath, private v
     }
 
     private fun expandByteArray(size: Int) {
-        val newByteArray = ArrayManager.getByteArray(size)
+        val newByteArray = ByteArray(size)
         byteArray.copyInto(newByteArray, 0, 0, min(byteArray.size, newByteArray.size))
         byteArray = newByteArray
     }
