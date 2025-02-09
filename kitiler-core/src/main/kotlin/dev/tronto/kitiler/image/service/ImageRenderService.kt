@@ -12,13 +12,13 @@ import dev.tronto.kitiler.image.incoming.controller.option.RenderOption
 import dev.tronto.kitiler.image.incoming.controller.option.RescaleOption
 import dev.tronto.kitiler.image.incoming.usecase.ImageRenderUseCase
 import dev.tronto.kitiler.image.outgoing.adaptor.SimpleImage
-import dev.tronto.kitiler.image.outgoing.port.ImageDataAutoRescale
+import dev.tronto.kitiler.image.outgoing.port.ImageDataAutoAdjust
 import dev.tronto.kitiler.image.outgoing.port.ImageRenderer
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ImageRenderService(
     private val imageRenderers: List<ImageRenderer> = ImageRenderer.services,
-    private val imageDataAutoRescales: List<ImageDataAutoRescale> = ImageDataAutoRescale.services,
+    private val imageDataAutoAdjusts: List<ImageDataAutoAdjust> = ImageDataAutoAdjust.services,
 ) : ImageRenderUseCase {
     companion object {
         @JvmStatic
@@ -70,9 +70,9 @@ class ImageRenderService(
 
             tryRender(rescaledImageData, format)?.let { return@logTrace wrapOptions(imageData, it, renderOptions) }
 
-            imageDataAutoRescales.forEach {
+            imageDataAutoAdjusts.forEach {
                 if (it.supports(rescaledImageData, format)) {
-                    val autoRescaled = it.rescale(rescaledImageData, format)
+                    val autoRescaled = it.adjust(rescaledImageData, format)
                     tryRender(autoRescaled, format)?.let {
                         logger.warn {
                             "Invalid type: ${rescaledImageData.dataType} for the $format driver. " +

@@ -16,24 +16,24 @@ import dev.tronto.kitiler.image.incoming.controller.option.ImageOption
 import dev.tronto.kitiler.image.incoming.controller.option.ImageSizeOption
 import dev.tronto.kitiler.image.incoming.controller.option.MaxSizeOption
 import dev.tronto.kitiler.image.incoming.controller.option.WindowOption
-import dev.tronto.kitiler.image.outgoing.port.ImageDataAutoRescale
+import dev.tronto.kitiler.image.outgoing.port.ImageDataAutoAdjust
 import dev.tronto.kitiler.stat.domain.Percentile
 import dev.tronto.kitiler.stat.incoming.controller.option.PercentileOption
 import dev.tronto.kitiler.stat.incoming.controller.option.StatisticsOption
 import dev.tronto.kitiler.stat.incoming.usecase.StatisticsUseCase
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-class StatisticsAutoRescale(private val statisticsUseCase: StatisticsUseCase = StatisticsService()) :
-    ImageDataAutoRescale {
+class StatisticsAutoAdjust(private val statisticsUseCase: StatisticsUseCase = StatisticsService()) :
+    ImageDataAutoAdjust {
     companion object {
         @JvmStatic
         private val logger = KotlinLogging.logger {}
+        private val SUPPORTS_FORMAT = setOf(ImageFormat.PNG, ImageFormat.JPEG, ImageFormat.WEBP)
     }
 
-    override fun supports(imageData: ImageData, format: ImageFormat): Boolean =
-        (format == ImageFormat.PNG || format == ImageFormat.JPEG) && (imageData is OptionContext)
+    override fun supports(imageData: ImageData, format: ImageFormat): Boolean = format in SUPPORTS_FORMAT
 
-    override suspend fun rescale(imageData: ImageData, format: ImageFormat): ImageData = logger.logTrace("rescale") {
+    override suspend fun adjust(imageData: ImageData, format: ImageFormat): ImageData = logger.logTrace("rescale") {
         require(supports(imageData, format) && imageData is OptionContext)
         val openOptions = imageData.getOptionProvider(ArgumentType<OpenOption>())
         val imageOptions = imageData.getOptionProvider(ArgumentType<ImageOption>())
