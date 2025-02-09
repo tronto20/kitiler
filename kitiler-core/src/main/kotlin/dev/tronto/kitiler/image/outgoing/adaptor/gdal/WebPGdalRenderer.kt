@@ -22,7 +22,7 @@ class WebPGdalRenderer : ImageRenderer {
         imageData.bandCount in SUPPORT_BAND
 
     override suspend fun render(imageData: ImageData, format: ImageFormat): ByteArray =
-        logger.logTrace("Render Gdal Jpeg") {
+        logger.logTrace("Render Gdal WebP") {
             return GdalRenderer.render(
                 "WEBP",
                 imageData.width,
