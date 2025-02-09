@@ -2,13 +2,14 @@ package dev.tronto.kitiler.spring.application.image
 
 import dev.tronto.kitiler.core.domain.BandInfo
 import dev.tronto.kitiler.core.domain.DataType
+import dev.tronto.kitiler.core.domain.OptionContext
 import dev.tronto.kitiler.image.domain.DataBuffer
 import dev.tronto.kitiler.image.domain.Image
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.ImageFormat
 import org.locationtech.jts.geom.Geometry
 
-val testImageData: ImageData = object : ImageData {
+val testImageData: ImageData = object : ImageData, OptionContext by OptionContext.wrap() {
     override val dataType: DataType
         get() = DataType.UInt16
     override val bandCount: Int

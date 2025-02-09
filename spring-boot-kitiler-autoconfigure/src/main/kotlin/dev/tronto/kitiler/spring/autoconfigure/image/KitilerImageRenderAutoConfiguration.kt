@@ -1,6 +1,6 @@
 package dev.tronto.kitiler.spring.autoconfigure.image
 
-import dev.tronto.kitiler.image.outgoing.port.ImageDataAutoRescale
+import dev.tronto.kitiler.image.outgoing.port.ImageDataAutoAdjust
 import dev.tronto.kitiler.image.outgoing.port.ImageRenderer
 import dev.tronto.kitiler.image.service.ImageRenderService
 import dev.tronto.kitiler.spring.autoconfigure.utils.sortedByOrdered
@@ -15,7 +15,7 @@ import java.util.function.Supplier
 @AutoConfiguration
 class KitilerImageRenderAutoConfiguration(applicationContext: GenericApplicationContext) {
     init {
-        ImageDataAutoRescale.services.forEach {
+        ImageDataAutoAdjust.services.forEach {
             applicationContext.defaultListableBeanFactory.registerBeanDefinition(
                 it::class.qualifiedName ?: it.toString(),
                 GenericBeanDefinition().apply {
@@ -38,10 +38,10 @@ class KitilerImageRenderAutoConfiguration(applicationContext: GenericApplication
     @Bean
     fun imageRenderService(
         imageRenderers: ObjectProvider<ImageRenderer>,
-        imageDataAutoRescales: List<ImageDataAutoRescale>,
+        imageDataAutoAdjusts: List<ImageDataAutoAdjust>,
     ) = ImageRenderService(
         imageRenderers.sortedByOrdered(),
-        imageDataAutoRescales.sortedByOrdered()
+        imageDataAutoAdjusts.sortedByOrdered()
     )
 
     @Bean
