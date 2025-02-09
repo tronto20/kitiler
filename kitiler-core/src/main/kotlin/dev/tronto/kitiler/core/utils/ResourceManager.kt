@@ -12,4 +12,9 @@ interface ResourceManager {
 suspend fun <T> withResourceManager(
     context: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> T,
-): T = withContext(context + ResourceManagerContext(), block)
+): T {
+    val startedManager = ResourceManagerHolder.getOrStart()
+    return withContext(context + ResourceManagerContext(), block).also {
+        startedManager.releaseIfStarted()
+    }
+}

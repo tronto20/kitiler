@@ -37,14 +37,18 @@ class GdalRenderer private constructor(
     private val driver: Driver = gdal.GetDriverByName(driverName)
 
     init {
-        if (driver.canCreate) {
-            dataset = driver.Create(path, width, height, band, type.gdalConst)
-            buffered = false
-        } else if (driver.canCreateCopy) {
-            dataset = memDriver.Create(path, width, height, band, type.gdalConst)
-            buffered = true
-        } else {
-            throw IllegalArgumentException("driver $driverName cannot create dataset.")
+        when {
+            driver.canCreate -> {
+                dataset = driver.Create(path, width, height, band, type.gdalConst)
+                buffered = false
+            }
+
+            driver.canCreateCopy -> {
+                dataset = memDriver.Create(path, width, height, band, type.gdalConst)
+                buffered = true
+            }
+
+            else -> throw IllegalArgumentException("driver $driverName cannot create dataset.")
         }
     }
 
@@ -84,9 +88,8 @@ class GdalRenderer private constructor(
     }
 
     fun setColorInterpretation(band: Int, colorInterpretation: ColorInterpretation) {
-        dataset.GetRasterBand(band).use { rasterBand ->
-            rasterBand.SetColorInterpretation(colorInterpretation.gdalConst)
-        }
+        val rasterBand = dataset.GetRasterBand(band)
+        rasterBand.SetColorInterpretation(colorInterpretation.gdalConst)
     }
 
     fun flush(): ByteArray = logger.logTrace("GdalRenderer.flush()") {

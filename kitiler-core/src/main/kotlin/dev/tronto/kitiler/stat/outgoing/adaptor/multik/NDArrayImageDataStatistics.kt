@@ -1,6 +1,7 @@
 package dev.tronto.kitiler.stat.outgoing.adaptor.multik
 
 import dev.tronto.kitiler.core.domain.BandIndex
+import dev.tronto.kitiler.core.utils.ResourceManagerContext
 import dev.tronto.kitiler.core.utils.logTrace
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.stat.domain.BandStatistics
@@ -24,42 +25,15 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
 
     override suspend fun statistics(imageData: ImageData, percentiles: List<Percentile>): List<BandStatistics> =
         logger.logTrace("do statistics") {
-            val mask = imageData.getMaskBuffer()
-            val validArray = BooleanArray(imageData.height * imageData.width)
-            when {
-                mask.isIntArray -> {
-                    val arr = mask.intArray
-                    arr.indices.forEach {
-                        validArray[it] = arr[it] != 0
-                    }
-                }
-
-                mask.isLongArray -> {
-                    val arr = mask.longArray
-                    arr.indices.forEach {
-                        validArray[it] = arr[it] != 0L
-                    }
-                }
-
-                mask.isFloatArray -> {
-                    val arr = mask.floatArray
-                    arr.indices.forEach {
-                        validArray[it] = arr[it] != 0f
-                    }
-                }
-
-                mask.isDoubleArray -> {
-                    val arr = mask.doubleArray
-                    arr.indices.forEach {
-                        validArray[it] = arr[it] != 0.0
-                    }
-                }
-            }
+            val validArray = imageData.getValidArray()
             val validPixels = logger.logTrace("mask check") {
-                validArray?.count { it } ?: (imageData.width * imageData.height)
+                validArray?.count {
+                    it
+                } ?: (imageData.width * imageData.height)
             }
             if (validPixels == 0) {
                 // 유효한 값이 없을 경우.
+                logger.warn { "No valid pixels found" }
                 (0..<imageData.bandCount).map {
                     BandStatistics(
                         BandIndex(it + 1),
@@ -81,12 +55,12 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                 }
             } else {
                 val data = imageData.getBandBuffer()
-                when {
+                val bandSize = imageData.width * imageData.height
+                val deferred = when {
                     data.isIntArray -> {
                         val dataArray = data.intArray
-                        val bandSize = imageData.width * imageData.height
                         (0..<imageData.bandCount).map { band ->
-                            CoroutineScope(Dispatchers.Default).async {
+                            CoroutineScope(Dispatchers.Default + ResourceManagerContext()).async {
                                 val valueGroup = mutableMapOf<Int, Int>()
                                 val offset = band * bandSize
                                 if (validArray == null) {
@@ -96,11 +70,10 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                                     }
                                 } else {
                                     for (i in 0..<bandSize) {
-                                        if (!validArray[i]) {
-                                            continue
+                                        if (validArray[i]) {
+                                            val value = dataArray[i + offset]
+                                            valueGroup[value] = valueGroup[value]?.plus(1) ?: 1
                                         }
-                                        val value = dataArray[i + offset]
-                                        valueGroup[value] = valueGroup[value]?.plus(1) ?: 1
                                     }
                                 }
                                 val sortedKeys = valueGroup.keys.sorted()
@@ -170,12 +143,11 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                                     }
                                 )
                             }
-                        }.awaitAll()
+                        }
                     }
 
                     data.isLongArray -> {
                         val dataArray = data.longArray
-                        val bandSize = imageData.width * imageData.height
                         (0..<imageData.bandCount).map { band ->
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Long, Int>()
@@ -261,12 +233,11 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                                     }
                                 )
                             }
-                        }.awaitAll()
+                        }
                     }
 
                     data.isFloatArray -> {
                         val dataArray = data.floatArray
-                        val bandSize = imageData.width * imageData.height
                         (0..<imageData.bandCount).map { band ->
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Float, Int>()
@@ -352,12 +323,11 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                                     }
                                 )
                             }
-                        }.awaitAll()
+                        }
                     }
 
                     data.isDoubleArray -> {
                         val dataArray = data.doubleArray
-                        val bandSize = imageData.width * imageData.height
                         (0..<imageData.bandCount).map { band ->
                             CoroutineScope(Dispatchers.Default).async {
                                 val valueGroup = mutableMapOf<Double, Int>()
@@ -443,11 +413,12 @@ class NDArrayImageDataStatistics : ImageDataStatistics {
                                     }
                                 )
                             }
-                        }.awaitAll()
+                        }
                     }
 
                     else -> throw UnsupportedOperationException()
                 }
+                deferred.awaitAll()
             }
         }
 }

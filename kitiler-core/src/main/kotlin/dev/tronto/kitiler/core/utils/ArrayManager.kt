@@ -88,16 +88,35 @@ object ArrayManager {
         { it.fill(.0) },
         { it.size }
     )
+    private val booleanArrayManager = Manager<BooleanArray>(
+        1,
+        { BooleanArray(it) },
+        { it.fill(false) },
+        { it.size }
+    )
 
     fun getByteArray(size: Int): ByteArray = byteArrayManager.get(size)
+        .also { ResourceManagerHolder.getManagerOrNull()?.onRelease { release(it) } }
+
     fun getIntArray(size: Int): IntArray = intArrayManager.get(size)
+        .also { ResourceManagerHolder.getManagerOrNull()?.onRelease { release(it) } }
+
     fun getLongArray(size: Int): LongArray = longArrayManager.get(size)
+        .also { ResourceManagerHolder.getManagerOrNull()?.onRelease { release(it) } }
+
     fun getFloatArray(size: Int): FloatArray = floatArrayManager.get(size)
+        .also { ResourceManagerHolder.getManagerOrNull()?.onRelease { release(it) } }
+
     fun getDoubleArray(size: Int): DoubleArray = doubleArrayManager.get(size)
+        .also { ResourceManagerHolder.getManagerOrNull()?.onRelease { release(it) } }
+
+    fun getBooleanArray(size: Int): BooleanArray = booleanArrayManager.get(size)
+        .also { ResourceManagerHolder.getManagerOrNull()?.onRelease { release(it) } }
 
     fun release(array: ByteArray) = byteArrayManager.release(array)
     fun release(array: IntArray) = intArrayManager.release(array)
     fun release(array: LongArray) = longArrayManager.release(array)
     fun release(array: FloatArray) = floatArrayManager.release(array)
     fun release(array: DoubleArray) = doubleArrayManager.release(array)
+    fun release(array: BooleanArray) = booleanArrayManager.release(array)
 }

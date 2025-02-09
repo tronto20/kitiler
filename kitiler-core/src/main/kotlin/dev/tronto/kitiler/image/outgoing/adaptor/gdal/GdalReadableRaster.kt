@@ -7,6 +7,7 @@ import dev.tronto.kitiler.core.incoming.controller.option.ArgumentType
 import dev.tronto.kitiler.core.incoming.controller.option.OpenOption
 import dev.tronto.kitiler.core.outgoing.adaptor.gdal.GdalDatasetFactory
 import dev.tronto.kitiler.core.outgoing.port.Raster
+import dev.tronto.kitiler.core.utils.ArrayManager
 import dev.tronto.kitiler.core.utils.logTrace
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.Window
@@ -288,12 +289,20 @@ class GdalReadableRaster(private val gdalDatasetFactory: GdalDatasetFactory, pri
             bandInfo(BandIndex(it))
         }
 
+        val maskIntArray = resultMask.toIntArray()
+        val validBooleanArray = ArrayManager.getBooleanArray(maskIntArray.size)
+        for (i in maskIntArray.indices) {
+            if (maskIntArray[i] != 0) {
+                validBooleanArray[i] = true
+            }
+        }
+
         @Suppress("UNCHECKED_CAST")
         val imageData = when (kClass) {
-            Int::class -> IntImageData(resultData as D3Array<Int>, resultMask, dataType, bandInfo)
-            Long::class -> LongImageData(resultData as D3Array<Long>, resultMask, dataType, bandInfo)
-            Float::class -> FloatImageData(resultData as D3Array<Float>, resultMask, dataType, bandInfo)
-            Double::class -> DoubleImageData(resultData as D3Array<Double>, resultMask, dataType, bandInfo)
+            Int::class -> IntImageData(resultData as D3Array<Int>, validBooleanArray, dataType, bandInfo)
+            Long::class -> LongImageData(resultData as D3Array<Long>, validBooleanArray, dataType, bandInfo)
+            Float::class -> FloatImageData(resultData as D3Array<Float>, validBooleanArray, dataType, bandInfo)
+            Double::class -> DoubleImageData(resultData as D3Array<Double>, validBooleanArray, dataType, bandInfo)
             else -> throw UnsupportedOperationException()
         }
 

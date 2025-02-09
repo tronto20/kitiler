@@ -8,17 +8,16 @@ import dev.tronto.kitiler.image.domain.DataBuffer
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.SimpleDataBuffer
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.D3Array
 import org.jetbrains.kotlinx.multik.ndarray.operations.toDoubleArray
 
 class DoubleImageData(
     data: D3Array<Double>,
-    mask: D2Array<Int>,
+    valid: BooleanArray?,
     override val dataType: DataType,
     override val bandInfo: List<BandInfo>,
     vararg options: OptionProvider<*>,
-) : NDArrayImageData<Double>(data, mask, *options),
+) : NDArrayImageData<Double>(data, valid, *options),
     ImageData {
     companion object {
         @JvmStatic
@@ -41,9 +40,9 @@ class DoubleImageData(
 
     override fun copy(
         data: D3Array<Double>,
-        mask: D2Array<Int>,
+        valid: BooleanArray?,
         vararg options: OptionProvider<*>,
-    ): NDArrayImageData<Double> = DoubleImageData(data, mask, dataType, bandInfo, *options)
+    ): NDArrayImageData<Double> = DoubleImageData(data, valid, dataType, bandInfo, *options)
 
     override fun getBandBuffer(): DataBuffer {
         val arr = data.toDoubleArray()
