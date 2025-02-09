@@ -3,7 +3,7 @@ package dev.tronto.kitiler.core.outgoing.port
 import java.net.URI
 
 interface CRS {
-    val name: String
+    val name: String?
     val wkt: String
     val proj4: String
     val unit: String

@@ -61,29 +61,44 @@ class GdalRenderer private constructor(
 
     fun write(data: DataBuffer, bands: IntArray) = logger.logTrace("GdalRenderer.write()") {
         require(bands.all { it in 1..band })
-        if (data.byteBuffer.isDirect) {
-            data.byteBuffer.rewind()
-            dataset.WriteRaster_Direct(
-                0, 0, width, height, width, height,
-                data.dataType.gdalConst, data.byteBuffer, bands
-            )
-            data.byteBuffer.rewind()
-        } else if (data.byteBuffer.hasArray()) {
-            val byteArray = data.byteBuffer.array()
-            dataset.WriteRaster(
-                0, 0, width, height, width, height,
-                data.dataType.gdalConst, byteArray, bands
-            )
-        } else {
-            data.byteBuffer.rewind()
-            val limit = data.byteBuffer.limit()
-            val byteArray = ByteArray(limit)
-            data.byteBuffer.get(byteArray)
-            dataset.WriteRaster(
-                0, 0, width, height, width, height,
-                data.dataType.gdalConst, byteArray, bands
-            )
-            data.byteBuffer.rewind()
+        when {
+            data.isIntArray -> {
+                dataset.handleError {
+                    WriteRaster(
+                        0, 0, width, height, width, height,
+                        data.dataType.gdalConst, data.intArray, bands
+                    )
+                }
+            }
+
+            data.isLongArray -> {
+                dataset.handleError {
+                    WriteRaster(
+                        0, 0, width, height, width, height,
+                        data.dataType.gdalConst, data.longArray, bands
+                    )
+                }
+            }
+
+            data.isFloatArray -> {
+                dataset.handleError {
+                    WriteRaster(
+                        0, 0, width, height, width, height,
+                        data.dataType.gdalConst, data.floatArray, bands
+                    )
+                }
+            }
+
+            data.isDoubleArray -> {
+                dataset.handleError {
+                    WriteRaster(
+                        0, 0, width, height, width, height,
+                        data.dataType.gdalConst, data.doubleArray, bands
+                    )
+                }
+            }
+
+            else -> UnsupportedOperationException()
         }
     }
 
@@ -123,7 +138,7 @@ class GdalRenderer private constructor(
             driverName: String,
             width: Int,
             height: Int,
-            band: Int,
+            bandCount: Int,
             type: DataType,
             name: String,
             block: GdalRenderer.() -> Unit,
@@ -131,12 +146,38 @@ class GdalRenderer private constructor(
             driverName,
             width,
             height,
-            band,
+            bandCount,
             type,
             name
         ).let {
             it.block()
             it.flush()
+        }
+
+        fun render(
+            driverName: String,
+            width: Int,
+            height: Int,
+            bandCount: Int,
+            type: DataType,
+            name: String,
+            dataBuffer: DataBuffer,
+            validBuffer: DataBuffer?,
+        ): ByteArray = GdalRenderer(
+            driverName,
+            width,
+            height,
+            if (validBuffer != null) bandCount + 1 else bandCount,
+            type,
+            name
+        ).let { renderer ->
+            renderer.write(dataBuffer, IntArray(bandCount) { it + 1 })
+            validBuffer?.let {
+                val alphaBand = bandCount + 1
+                renderer.setColorInterpretation(alphaBand, ColorInterpretation.Alpha)
+                renderer.write(it, intArrayOf(alphaBand))
+            }
+            renderer.flush()
         }
     }
 }

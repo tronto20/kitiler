@@ -1,11 +1,8 @@
 package dev.tronto.kitiler.image.domain
 
 import dev.tronto.kitiler.core.domain.DataType
-import dev.tronto.kitiler.core.utils.ArrayManager
-import java.nio.ByteBuffer
 
 interface DataBuffer {
-    val byteBuffer: ByteBuffer
     val dataType: DataType
 
     val isIntArray: Boolean
@@ -18,47 +15,27 @@ interface DataBuffer {
         get() = dataType == DataType.Float64
 
     val intArray: IntArray
-        get() {
-            require(isIntArray) {
-            }
-            byteBuffer.rewind()
-            val buffer = byteBuffer.asIntBuffer()
-            val array = ArrayManager.getIntArray(buffer.limit())
-            buffer.get(array)
-            byteBuffer.rewind()
-            return array
+        get() = if (isIntArray) {
+            throw NotImplementedError()
+        } else {
+            throw UnsupportedOperationException()
         }
     val longArray: LongArray
-        get() {
-            require(isLongArray) {
-            }
-            byteBuffer.rewind()
-            val buffer = byteBuffer.asLongBuffer()
-            val array = ArrayManager.getLongArray(buffer.limit())
-            buffer.get(array)
-            byteBuffer.rewind()
-            return array
+        get() = if (isLongArray) {
+            throw NotImplementedError()
+        } else {
+            throw UnsupportedOperationException()
         }
     val floatArray: FloatArray
-        get() {
-            require(isFloatArray) {
-            }
-            byteBuffer.rewind()
-            val buffer = byteBuffer.asFloatBuffer()
-            val array = ArrayManager.getFloatArray(buffer.limit())
-            buffer.get(array)
-            byteBuffer.rewind()
-            return array
+        get() = if (isFloatArray) {
+            throw NotImplementedError()
+        } else {
+            throw UnsupportedOperationException()
         }
     val doubleArray: DoubleArray
-        get() {
-            require(isDoubleArray) {
-            }
-            byteBuffer.rewind()
-            val buffer = byteBuffer.asDoubleBuffer()
-            val array = ArrayManager.getDoubleArray(buffer.limit())
-            buffer.get(array)
-            byteBuffer.rewind()
-            return array
+        get() = if (isDoubleArray) {
+            throw NotImplementedError()
+        } else {
+            throw UnsupportedOperationException()
         }
 }

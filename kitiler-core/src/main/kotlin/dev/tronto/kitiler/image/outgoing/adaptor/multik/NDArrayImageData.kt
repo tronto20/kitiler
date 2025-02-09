@@ -3,7 +3,6 @@ package dev.tronto.kitiler.image.outgoing.adaptor.multik
 import dev.tronto.kitiler.core.domain.DataType
 import dev.tronto.kitiler.core.domain.OptionContext
 import dev.tronto.kitiler.core.incoming.controller.option.OptionProvider
-import dev.tronto.kitiler.core.utils.ArrayManager
 import dev.tronto.kitiler.core.utils.logTrace
 import dev.tronto.kitiler.image.domain.ImageData
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -60,7 +59,7 @@ sealed class NDArrayImageData<T>(
 
     override fun mask(geom: Geometry): ImageData {
         val index = IndexedPointInAreaLocator(geom)
-        val validArray = ArrayManager.getBooleanArray(height * width)
+        val validArray = BooleanArray(height * width)
         valid?.copyInto(validArray)
         for (i in validArray.indices) {
             val coord = Coordinate((i % width).toDouble(), (i / width).toDouble())
@@ -139,7 +138,8 @@ sealed class NDArrayImageData<T>(
                 val pixelSizePerBand = data.shape[1] * data.shape[2]
                 (0..<data.shape[0]).forEach { band ->
                     val from =
-                        rangeFrom.getOrElse(band) { rangeFrom[0] }.let { it.start.toLong()..it.endInclusive.toLong() }
+                        rangeFrom.getOrElse(band) { rangeFrom[0] }
+                            .let { it.start.toLong()..it.endInclusive.toLong() }
                     val to = rangeTo.getOrElse(band) { rangeTo[0] }
                     linearRescaleToInt(dataArray, pixelSizePerBand * band, pixelSizePerBand, from, to, targetArray)
                 }
@@ -154,7 +154,8 @@ sealed class NDArrayImageData<T>(
                 val pixelSizePerBand = data.shape[1] * data.shape[2]
                 (0..<data.shape[0]).forEach { band ->
                     val from =
-                        rangeFrom.getOrElse(band) { rangeFrom[0] }.let { it.start.toFloat()..it.endInclusive.toFloat() }
+                        rangeFrom.getOrElse(band) { rangeFrom[0] }
+                            .let { it.start.toFloat()..it.endInclusive.toFloat() }
                     val to = rangeTo.getOrElse(band) { rangeTo[0] }
                     linearRescaleToInt(dataArray, pixelSizePerBand * band, pixelSizePerBand, from, to, targetArray)
                 }

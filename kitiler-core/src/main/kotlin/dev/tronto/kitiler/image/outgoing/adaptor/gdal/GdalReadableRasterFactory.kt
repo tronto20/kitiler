@@ -16,6 +16,7 @@ open class GdalReadableRasterFactory(
     private val gdalRasterFactory: RasterFactory = GdalRasterFactory(crsFactory, gdalDatasetFactory),
 ) : ReadableRasterFactory,
     RasterFactory by gdalRasterFactory {
+
     override suspend fun createReadableRaster(options: OptionProvider<OpenOption>): ReadableRaster =
         GdalReadableRaster(gdalDatasetFactory, gdalRasterFactory.create(options))
 }
