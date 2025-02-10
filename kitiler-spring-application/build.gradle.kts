@@ -139,7 +139,7 @@ if (DefaultNativePlatform.getCurrentArchitecture().isArm64) {
     }
 
     tasks.bootBuildImage {
-        builder.set("paketobuildpacks/builder-jammy-base:latest")
+        builder.set("paketobuildpacks/builder-jammy-full:latest")
     }
 }
 
