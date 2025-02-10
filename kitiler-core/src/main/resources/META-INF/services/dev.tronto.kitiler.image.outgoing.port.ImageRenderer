@@ -2,3 +2,4 @@ dev.tronto.kitiler.image.outgoing.adaptor.multik.NPYNPZMultikRenderer
 dev.tronto.kitiler.image.outgoing.adaptor.gdal.JpegGdalRenderer
 dev.tronto.kitiler.image.outgoing.adaptor.gdal.PngGdalRenderer
 dev.tronto.kitiler.image.outgoing.adaptor.gdal.WebPGdalRenderer
+dev.tronto.kitiler.image.outgoing.adaptor.gdal.JP2GdalRenderer

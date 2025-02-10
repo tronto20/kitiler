@@ -7,30 +7,28 @@ import dev.tronto.kitiler.image.domain.ImageFormat
 import dev.tronto.kitiler.image.outgoing.port.ImageRenderer
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-class JpegGdalRenderer : ImageRenderer {
+class JP2GdalRenderer : ImageRenderer {
     companion object {
         @JvmStatic
-        private val logger = KotlinLogging.logger {}
+        private val logger = KotlinLogging.logger { }
 
-        @JvmStatic
-        private val SUPPORT_BAND = setOf(1, 3)
+        private val SUPPORT_DATATYPE = setOf(DataType.UInt8, DataType.UInt16, DataType.Int16)
     }
 
-    override fun supports(imageData: ImageData, format: ImageFormat): Boolean = format == ImageFormat.JPEG &&
-        imageData.dataType == DataType.UInt8 &&
-        imageData.bandCount in SUPPORT_BAND
+    override fun supports(imageData: ImageData, format: ImageFormat): Boolean =
+        format == ImageFormat.JP2 && imageData.dataType in SUPPORT_DATATYPE
 
     override suspend fun render(imageData: ImageData, format: ImageFormat): ByteArray =
-        logger.logTrace("Render Gdal Jpeg") {
+        logger.logTrace("Render Gdal JP2") {
             return GdalRenderer.render(
-                "JPEG",
+                "JP2",
                 imageData.width,
                 imageData.height,
                 imageData.bandCount,
                 imageData.dataType,
-                "image.jpeg",
+                "image.jp2",
                 imageData.getBandBuffer(),
-                null // ignore mask
+                imageData.getValidArray()?.toDataBuffer()
             )
         }
 }

@@ -23,6 +23,17 @@ class WebPGdalRenderer : ImageRenderer {
 
     override suspend fun render(imageData: ImageData, format: ImageFormat): ByteArray =
         logger.logTrace("Render Gdal WebP") {
+            val dataBuffer = if (imageData.bandCount == 1) {
+                val bandBuffer = imageData.getBandBuffer()
+                val data = bandBuffer.intArray
+                val result = IntArray(data.size)
+                data.copyInto(result, 0)
+                data.copyInto(result, data.size)
+                data.copyInto(result, data.size + data.size)
+                IntArrayDataBuffer(result)
+            } else {
+                imageData.getBandBuffer()
+            }
             return GdalRenderer.render(
                 "WEBP",
                 imageData.width,
@@ -30,24 +41,8 @@ class WebPGdalRenderer : ImageRenderer {
                 3,
                 imageData.dataType,
                 "image.webp",
-                if (imageData.bandCount == 1) {
-                    val bandBuffer = imageData.getBandBuffer()
-                    val data = bandBuffer.intArray
-                    val result = IntArray(data.size)
-                    data.copyInto(result, 0)
-                    data.copyInto(result, data.size)
-                    data.copyInto(result, data.size + data.size)
-                    IntArrayDataBuffer(result)
-                } else {
-                    imageData.getBandBuffer()
-                },
-                imageData.getValidArray()?.let { valid ->
-                    IntArrayDataBuffer(
-                        IntArray(imageData.width * imageData.height) {
-                            if (valid[it]) 255 else 0
-                        }
-                    )
-                }
+                dataBuffer,
+                imageData.getValidArray()?.toDataBuffer()
             )
         }
 }
