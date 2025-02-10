@@ -131,6 +131,18 @@ tasks.bootBuildImage {
     environment.set(envs)
 }
 
+
+if (DefaultNativePlatform.getCurrentArchitecture().isArm64) {
+    buildRunnerImageTask {
+        args("--build-arg")
+        args("STACK_ID=io.buildpacks.stacks.jammy")
+    }
+
+    tasks.bootBuildImage {
+        builder.set("paketobuildpacks/builder-jammy-base:latest")
+    }
+}
+
 tasks.register("buildImage") {
     group = "build"
     dependsOn(tasks.bootBuildImage)
