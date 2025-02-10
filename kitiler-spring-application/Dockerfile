@@ -6,5 +6,5 @@ ARG JNI=/usr/lib/x86_64-linux-gnu/jni
 ENV LD_LIBRARY_PATH $JNI
 ENV GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
 
-ARG STACK_ID=io.buildpacks.stacks.jammy.tiny
+ARG STACK_ID=io.buildpacks.stacks.noble.tiny
 LABEL io.buildpacks.stack.id=$STACK_ID
