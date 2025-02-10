@@ -59,6 +59,8 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v3
         name: setup gradle
+        with:
+          cache-disabled: true
 
       - name: build and publish Container Image with gradle
         run: |
@@ -104,6 +106,8 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v3
         name: setup gradle
+        with:
+          cache-disabled: true
 
       - name: build and publish Container Image with gradle
         run: |
