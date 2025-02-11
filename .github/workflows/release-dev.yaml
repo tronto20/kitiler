@@ -36,7 +36,7 @@ jobs:
             -Pimage.registry.publish.username=${{github.actor}} \
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
             -Pimage.name=ghcr.io/tronto20/kitiler \
-            -Pimage.tags=spring-${{ github.ref_name }}-amd \
+            -Pimage.tags=spring-${{ github.ref_name }}-amd,spring-${{ github.ref_name }}-${{ github.run_id }}-amd \
             -Pimage.push=true
 
   publish-spring-arm:
@@ -153,7 +153,7 @@ jobs:
             -Pimage.registry.publish.username=${{github.actor}} \
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
             -Pimage.name=ghcr.io/tronto20/kitiler \
-            -Pimage.tags=spring-native-${{ github.ref_name }}-${{ github.run_id }}-arm,spring-native-${{ github.ref_name }}-arm,${{ github.ref_name }}-${{ github.run_id }}-arm,${{ github.ref_name }}-amd \
+            -Pimage.tags=spring-native-${{ github.ref_name }}-${{ github.run_id }}-arm,spring-native-${{ github.ref_name }}-arm,${{ github.ref_name }}-${{ github.run_id }}-arm,${{ github.ref_name }}-arm \
             -Pimage.push=true
 
   publish-spring-native-manifest:
