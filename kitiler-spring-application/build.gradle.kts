@@ -72,6 +72,9 @@ val buildRunnerImageTask = tasks.register("buildRunnerImage", PathExec::class.ja
     val gdalVersion = libs.versions.gdal.get()
     args("--build-arg")
     args("GDAL_VERSION=${gdalVersion}")
+    args("--build-arg")
+    args("STACK_ID=io.buildpacks.stacks.noble.tiny")
+
     if (DefaultNativePlatform.getCurrentArchitecture().isArm64) {
         args("--build-arg")
         args("JNI=/usr/lib/aarch64-linux-gnu/jni")
@@ -129,6 +132,7 @@ tasks.bootBuildImage {
     envs["BP_JVM_VERSION"] = jvmVersion.toString()
     envs["BPE_DELIM_JAVA_TOOL_OPTIONS"] = " "
     environment.set(envs)
+    builder.set("paketobuildpacks/builder-noble-java-tiny:latest")
 }
 
 tasks.register("buildImage") {
