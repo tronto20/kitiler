@@ -44,7 +44,7 @@ jobs:
             --continue \
             -Pimage.native.enabled=false \
             -Pimage.name=ghcr.io/tronto20/kitiler \
-            -Pimage.tags=spring-${{ github.ref_name }}-${{ github.run_id }}-amd \
+            -Pimage.tags=spring-${{ github.base_ref }}-${{ github.run_id }}-amd \
             -Pimage.push=false
 
   test-publish-spring-arm:
