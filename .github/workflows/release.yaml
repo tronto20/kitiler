@@ -119,11 +119,11 @@ jobs:
       - name: Create manifest
         run: |
           docker buildx imagetools create \
-          -t spring \
-          -t spring-latest \
-          -t spring-${{ github.ref_name }} \
-          spring-${{ github.ref_name }}-amd \
-          spring-${{ github.ref_name }}-arm
+          -t ghcr.io/tronto20/kitiler:spring \
+          -t ghcr.io/tronto20/kitiler:spring-latest \
+          -t ghcr.io/tronto20/kitiler:spring-${{ github.ref_name }} \
+          ghcr.io/tronto20/kitiler:spring-${{ github.ref_name }}-amd \
+          ghcr.io/tronto20/kitiler:spring-${{ github.ref_name }}-arm
 
 
   publish-spring-native-amd:
@@ -210,10 +210,10 @@ jobs:
       - name: Create manifest
         run: |
           docker buildx imagetools create \
-          -t latest \
-          -t ${{ github.ref_name }} \
-          -t spring-native \
-          -t spring-native-latest \
-          -t spring-native-${{ github.ref_name }} \
-          spring-native-${{ github.ref_name }}-amd \
-          spring-native-${{ github.ref_name }}-arm
+          -t ghcr.io/tronto20/kitiler:latest \
+          -t ghcr.io/tronto20/kitiler:${{ github.ref_name }} \
+          -t ghcr.io/tronto20/kitiler:spring-native \
+          -t ghcr.io/tronto20/kitiler:spring-native-latest \
+          -t ghcr.io/tronto20/kitiler:spring-native-${{ github.ref_name }} \
+          ghcr.io/tronto20/kitiler:spring-native-${{ github.ref_name }}-amd \
+          ghcr.io/tronto20/kitiler:spring-native-${{ github.ref_name }}-arm
