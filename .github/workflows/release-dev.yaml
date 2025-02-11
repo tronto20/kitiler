@@ -92,7 +92,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Create manifest
-        id: build multi-arch image
         run: |
           docker buildx imagetools create \
           -t spring-${{ github.ref_name }} \
@@ -181,7 +180,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Create manifest
-        id: build multi-arch image
         run: |
           docker buildx imagetools create \
           -t ${{ github.ref_name }} \
