@@ -37,7 +37,8 @@ jobs:
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
             -Pimage.name=ghcr.io/tronto20/kitiler \
             -Pimage.tags=spring-${{ github.ref_name }}-amd,spring-${{ github.ref_name }}-${{ github.run_id }}-amd \
-            -Pimage.push=true
+            -Pimage.push=true \
+            -Pimage.metadata.revision=${{ github.run_id }}
 
   publish-spring-arm:
     runs-on: ubuntu-24.04-arm
@@ -66,7 +67,8 @@ jobs:
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
             -Pimage.name=ghcr.io/tronto20/kitiler \
             -Pimage.tags=spring-${{ github.ref_name }}-arm,spring-${{ github.ref_name }}-${{ github.run_id }}-arm \
-            -Pimage.push=true
+            -Pimage.push=true \
+            -Pimage.metadata.revision=${{ github.run_id }}
 
   publish-spring-manifest:
     runs-on: ubuntu-24.04
@@ -96,6 +98,7 @@ jobs:
           docker buildx imagetools create \
           -t ghcr.io/tronto20/kitiler:spring-${{ github.ref_name }} \
           -t ghcr.io/tronto20/kitiler:spring-${{ github.ref_name }}-${{ github.run_id }} \
+          --annotation "index:org.opencontainers.image.description=kotlin titiler" \
           ghcr.io/tronto20/kitiler:spring-${{ github.ref_name }}-${{ github.run_id }}-amd \
           ghcr.io/tronto20/kitiler:spring-${{ github.ref_name }}-${{ github.run_id }}-arm
 
@@ -126,7 +129,8 @@ jobs:
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
             -Pimage.name=ghcr.io/tronto20/kitiler \
             -Pimage.tags=spring-native-${{ github.ref_name }}-${{ github.run_id }}-amd,spring-native-${{ github.ref_name }}-amd,${{ github.ref_name }}-${{ github.run_id }}-amd,${{ github.ref_name }}-amd \
-            -Pimage.push=true
+            -Pimage.push=true \
+            -Pimage.metadata.revision=${{ github.run_id }}
 
   publish-spring-native-arm:
     runs-on: ubuntu-24.04-arm
@@ -154,7 +158,8 @@ jobs:
             -Pimage.registry.publish.password=${{secrets.GITHUB_TOKEN}} \
             -Pimage.name=ghcr.io/tronto20/kitiler \
             -Pimage.tags=spring-native-${{ github.ref_name }}-${{ github.run_id }}-arm,spring-native-${{ github.ref_name }}-arm,${{ github.ref_name }}-${{ github.run_id }}-arm,${{ github.ref_name }}-arm \
-            -Pimage.push=true
+            -Pimage.push=true \
+            -Pimage.metadata.revision=${{ github.run_id }}
 
   publish-spring-native-manifest:
     runs-on: ubuntu-24.04
@@ -186,5 +191,6 @@ jobs:
           -t ghcr.io/tronto20/kitiler:${{ github.ref_name }}-${{ github.run_id }} \
           -t ghcr.io/tronto20/kitiler:spring-native-${{ github.ref_name }} \
           -t ghcr.io/tronto20/kitiler:spring-native-${{ github.ref_name }}-${{ github.run_id }} \
+          --annotation "index:org.opencontainers.image.description=kotlin titiler" \
           ghcr.io/tronto20/kitiler:spring-native-${{ github.ref_name }}-${{ github.run_id }}-amd \
           ghcr.io/tronto20/kitiler:spring-native-${{ github.ref_name }}-${{ github.run_id }}-arm

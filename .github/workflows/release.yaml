@@ -61,7 +61,8 @@ jobs:
             -Pimage.name=ghcr.io/tronto20/kitiler \
             -Pimage.tags=spring-amd,spring-latest-amd,spring-${{ github.ref_name }}-amd \
             -Pimage.push=true \
-            -Pversion=${{ github.ref_name }}
+            -Pversion=${{ github.ref_name }} \
+            -Pimage.metadata.revision=${{ github.run_id }}
 
   publish-spring-arm:
     runs-on: ubuntu-24.04-arm
@@ -91,7 +92,8 @@ jobs:
             -Pimage.name=ghcr.io/tronto20/kitiler \
             -Pimage.tags=spring-arm,spring-latest-arm,spring-${{ github.ref_name }}-arm \
             -Pimage.push=true \
-            -Pversion=${{ github.ref_name }}
+            -Pversion=${{ github.ref_name }} \
+            -Pimage.metadata.revision=${{ github.run_id }}
 
   publish-spring-manifest:
     runs-on: ubuntu-24.04
@@ -153,7 +155,8 @@ jobs:
             -Pimage.name=ghcr.io/tronto20/kitiler \
             -Pimage.tags=spring-native-amd,spring-native-latest-amd,latest-amd,spring-native-${{ github.ref_name }}-amd,${{ github.ref_name }}-amd \
             -Pimage.push=true \
-            -Pversion=${{ github.ref_name }}
+            -Pversion=${{ github.ref_name }} \
+            -Pimage.metadata.revision=${{ github.run_id }}
 
   publish-spring-native-arm:
     runs-on: ubuntu-24.04-arm
@@ -182,7 +185,8 @@ jobs:
             -Pimage.name=ghcr.io/tronto20/kitiler \
             -Pimage.tags=spring-native-arm,spring-native-latest-arm,latest-arm,spring-native-${{ github.ref_name }}-arm,${{ github.ref_name }}-arm \
             -Pimage.push=true \
-            -Pversion=${{ github.ref_name }}
+            -Pversion=${{ github.ref_name }} \
+            -Pimage.metadata.revision=${{ github.run_id }}
 
   publish-spring-native-manifest:
     runs-on: ubuntu-24.04
