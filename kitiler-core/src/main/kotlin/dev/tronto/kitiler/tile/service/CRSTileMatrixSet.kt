@@ -20,7 +20,7 @@ internal class CRSTileMatrixSet(val tileMatrixSet: TileMatrixSet, val crs: CRS) 
         "US survey foot" to 0.30480060960121924
     )
     private val metersPerUnit: Double = unitFactors[crs.unit] ?: throw UnsupportedUnitException(
-        crs.name,
+        crs.name ?: "Unknown",
         crs.unit,
         null
     )

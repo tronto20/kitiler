@@ -1,6 +1,7 @@
 package dev.tronto.kitiler.core.outgoing.adaptor.gdal
 
 import dev.tronto.kitiler.core.domain.DataType
+import dev.tronto.kitiler.core.outgoing.adaptor.gdal.get
 import dev.tronto.kitiler.core.outgoing.adaptor.jts.AffineCoordinateTransform
 import dev.tronto.kitiler.core.outgoing.port.CRS
 import dev.tronto.kitiler.core.outgoing.port.CRSFactory
@@ -36,10 +37,7 @@ class GdalDataset(val name: String, val dataset: Dataset, private val memFilePat
     }
 
     override fun close() {
-        kotlin.runCatching {
-            sampleBand.delete()
-        }
-        kotlin.runCatching {
+        runCatching {
             dataset.delete()
         }
         memFilePath?.let { gdal.Unlink(it) }

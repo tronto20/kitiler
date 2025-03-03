@@ -1,12 +1,16 @@
 package dev.tronto.kitiler.image.outgoing.adaptor.multik
 
-import dev.tronto.kitiler.core.domain.Ordered
 import dev.tronto.kitiler.image.domain.ImageData
 import dev.tronto.kitiler.image.domain.ImageFormat
 import dev.tronto.kitiler.image.outgoing.port.ImageRenderer
+import org.jetbrains.bio.npy.NpzFile
+import org.jetbrains.kotlinx.multik.api.Multik
 import org.jetbrains.kotlinx.multik.api.io.writeNPY
-import org.jetbrains.kotlinx.multik.api.io.writeNPZ
 import org.jetbrains.kotlinx.multik.api.mk
+import org.jetbrains.kotlinx.multik.api.ndarray
+import org.jetbrains.kotlinx.multik.ndarray.data.DataType
+import org.jetbrains.kotlinx.multik.ndarray.data.Dimension
+import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
 import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
@@ -34,32 +38,162 @@ import java.nio.file.attribute.UserPrincipalLookupService
 import java.nio.file.spi.FileSystemProvider
 import kotlin.math.min
 
-class NDArrayNPYRenderer :
-    ImageRenderer,
-    Ordered {
+class NPYNPZMultikRenderer : ImageRenderer {
     companion object {
         @JvmStatic
         private val SUPPORT_FORMAT = listOf(ImageFormat.NPY, ImageFormat.NPZ)
     }
 
-    override fun supports(imageData: ImageData, format: ImageFormat): Boolean =
-        imageData is NDArrayImageData<*> && format in SUPPORT_FORMAT
+    override fun supports(imageData: ImageData, format: ImageFormat): Boolean = format in SUPPORT_FORMAT
 
     override suspend fun render(imageData: ImageData, format: ImageFormat): ByteArray {
-        require(imageData is NDArrayImageData<*>)
+        val data = imageData.getBandBuffer()
+        val valid = imageData.getValidArray()
         val tmpFilePath = InMemoryMockPath("image")
-        if (format == ImageFormat.NPY) {
-            mk.writeNPY(tmpFilePath, imageData.data)
-        } else if (format == ImageFormat.NPZ) {
-            mk.writeNPZ(tmpFilePath, imageData.data)
+        if (valid == null) {
+            val mkData = when {
+                data.isIntArray -> {
+                    mk.ndarray(data.intArray, imageData.bandCount, imageData.height, imageData.width)
+                }
+
+                data.isLongArray -> {
+                    mk.ndarray(data.longArray, imageData.bandCount, imageData.height, imageData.width)
+                }
+
+                data.isFloatArray -> {
+                    mk.ndarray(data.floatArray, imageData.bandCount, imageData.height, imageData.width)
+                }
+
+                data.isDoubleArray -> {
+                    mk.ndarray(data.doubleArray, imageData.bandCount, imageData.height, imageData.width)
+                }
+
+                else -> throw IllegalStateException("Unsupported data dataType: ${data.dataType}")
+            }
+            if (format == ImageFormat.NPY) {
+                mk.writeNPY(tmpFilePath, mkData)
+            } else if (format == ImageFormat.NPZ) {
+                mk.writeNPZ(tmpFilePath, mapOf("data" to mkData))
+            }
         } else {
-            throw UnsupportedOperationException("$format format not supported.")
+            if (format == ImageFormat.NPY) {
+                val npyData = when {
+                    data.isIntArray -> {
+                        val resultDataArray = data.intArray
+                        val resultValidArray = IntArray(valid.size) {
+                            if (valid[it]) 255 else 0
+                        }
+                        mk.ndarray(
+                            resultDataArray + resultValidArray,
+                            imageData.bandCount + 1,
+                            imageData.height,
+                            imageData.width
+                        )
+                    }
+
+                    data.isLongArray -> {
+                        val resultDataArray = data.longArray
+                        val resultValidArray = LongArray(valid.size) {
+                            if (valid[it]) 255 else 0
+                        }
+
+                        mk.ndarray(
+                            resultDataArray + resultValidArray,
+                            imageData.bandCount + 1,
+                            imageData.height,
+                            imageData.width
+                        )
+                    }
+
+                    data.isFloatArray -> {
+                        val resultDataArray = data.floatArray
+                        val resultValidArray = FloatArray(valid.size) {
+                            if (valid[it]) 255f else 0f
+                        }
+                        mk.ndarray(
+                            resultDataArray + resultValidArray,
+                            imageData.bandCount + 1,
+                            imageData.height,
+                            imageData.width
+                        )
+                    }
+
+                    data.isDoubleArray -> {
+                        val resultDataArray = data.doubleArray
+                        val resultValidArray = DoubleArray(valid.size) {
+                            if (valid[it]) 255.0 else 0.0
+                        }
+                        mk.ndarray(
+                            resultDataArray + resultValidArray,
+                            imageData.bandCount + 1,
+                            imageData.height,
+                            imageData.width
+                        )
+                    }
+
+                    else -> throw IllegalStateException("Unsupported data dataType: ${data.dataType}")
+                }
+                mk.writeNPY(tmpFilePath, npyData)
+            } else if (format == ImageFormat.NPZ) {
+                val mkData = when {
+                    data.isIntArray -> {
+                        mk.ndarray(data.intArray, imageData.bandCount, imageData.height, imageData.width)
+                    }
+
+                    data.isLongArray -> {
+                        mk.ndarray(data.longArray, imageData.bandCount, imageData.height, imageData.width)
+                    }
+
+                    data.isFloatArray -> {
+                        mk.ndarray(data.floatArray, imageData.bandCount, imageData.height, imageData.width)
+                    }
+
+                    data.isDoubleArray -> {
+                        mk.ndarray(data.doubleArray, imageData.bandCount, imageData.height, imageData.width)
+                    }
+
+                    else -> throw IllegalStateException("Unsupported data dataType: ${data.dataType}")
+                }
+                val validArray = IntArray(valid.size)
+                for (i in valid.indices) {
+                    validArray[i] = if (valid[i]) {
+                        255
+                    } else {
+                        0
+                    }
+                }
+                val ndValid = mk.ndarray(validArray, imageData.height, imageData.width)
+                mk.writeNPZ(tmpFilePath, mapOf("data" to mkData, "mask" to ndValid))
+            } else {
+                throw UnsupportedOperationException("$format format not supported.")
+            }
         }
         return tmpFilePath.byteArray
     }
+
+    private fun Multik.writeNPZ(path: Path, ndArrays: Map<String, NDArray<out Number, out Dimension>>) {
+        NpzFile.write(path).use {
+            ndArrays.forEach { name, array ->
+                when (array.dtype) {
+                    DataType.DoubleDataType -> it.write(name, array.data.getDoubleArray(), array.shape)
+                    DataType.FloatDataType -> it.write(name, array.data.getFloatArray(), array.shape)
+                    DataType.IntDataType -> it.write(name, array.data.getIntArray(), array.shape)
+                    DataType.LongDataType -> it.write(name, array.data.getLongArray(), array.shape)
+                    DataType.ShortDataType -> it.write(name, array.data.getShortArray(), array.shape)
+                    DataType.ByteDataType -> it.write(name, array.data.getByteArray(), array.shape)
+                    else -> throw IllegalArgumentException(
+                        "Unsupported data type: ${array.dtype}. Only Double, Float, Int, Long, Short and Byte are supported."
+                    )
+                }
+            }
+        }
+    }
 }
 
-private class InMemoryMockPath(val name: String, var byteArray: ByteArray = ByteArray(1)) : Path {
+private class InMemoryMockPath(
+    val name: String,
+    var byteArray: ByteArray = ByteArray(5 * 1024), // 5 kB
+) : Path {
     override fun getFileSystem(): FileSystem = InMemoryFileSystem()
 
     override fun isAbsolute(): Boolean = true
@@ -169,7 +303,8 @@ private class InMemoryFileSystemProvider : FileSystemProvider() {
     }
 }
 
-private class ByteArrayFileChannel(private val path: InMemoryMockPath, private var position: Int = 0) : FileChannel() {
+private class ByteArrayFileChannel(private val path: InMemoryMockPath, private var position: Int = 0) :
+    FileChannel() {
     private var byteArray: ByteArray
         get() = path.byteArray
         set(value) {

@@ -27,6 +27,7 @@ mavenPublishGradlePlugin = { module = "com.vanniktech.maven.publish:com.vannikte
 # kotlin
 kotlinxCoroutinesBom = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-bom", version.ref = "kotlinxCoroutines" }
 kotlinxCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
+kotlinxCoroutinesSlf4j = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j" }
 kotlinxCoroutinesReactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor" }
 kotlinxSerializationBom = { module = "org.jetbrains.kotlinx:kotlinx-serialization-bom", version.ref = "kotlinxSerialization" }
 kotlinxSerializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json" }
@@ -34,6 +35,7 @@ kotlinxSerializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serializati
 # multik
 multikCore = { module = "org.jetbrains.kotlinx:multik-core", version.ref = "multik" }
 multikDefault = { module = "org.jetbrains.kotlinx:multik-default", version.ref = "multik" }
+bionpy = { module = "org.jetbrains.bio:npy", version = "0.3.5" }
 
 # spring
 springBootDependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
@@ -81,7 +83,7 @@ mockkSpring = { module = "com.ninja-squad:springmockk", version = "4.0.2" }
 [bundles]
 boms = ["kotlinxCoroutinesBom", "kotlinxSerializationBom", "slf4jBom", "springBootDependencies"]
 logging = ["slf4jApi", "kotlinLogging"]
-multik = ["multikCore", "multikDefault"]
+multik = ["multikCore", "multikDefault", "bionpy"]
 
 jts = ["jtsCore", "jtsIo"]
 

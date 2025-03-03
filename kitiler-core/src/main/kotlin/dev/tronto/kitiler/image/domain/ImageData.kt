@@ -1,13 +1,16 @@
 package dev.tronto.kitiler.image.domain
 
+import dev.tronto.kitiler.core.domain.BandInfo
 import dev.tronto.kitiler.core.domain.DataType
+import dev.tronto.kitiler.core.domain.OptionContext
 import org.locationtech.jts.geom.Geometry
 
-interface ImageData {
+interface ImageData : OptionContext {
     val dataType: DataType
-    val band: Int
+    val bandCount: Int
     val width: Int
     val height: Int
+    val bandInfo: List<BandInfo>
 
     val masked: Boolean
 
@@ -25,4 +28,7 @@ interface ImageData {
     ): ImageData where T : Number, R : Number, T : Comparable<T>, R : Comparable<R>
 
     fun mask(geom: Geometry): ImageData
+
+    fun getBandBuffer(): DataBuffer
+    fun getValidArray(): BooleanArray?
 }

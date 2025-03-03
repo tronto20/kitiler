@@ -5,7 +5,7 @@ import dev.tronto.kitiler.spring.autoconfigure.image.KitilerImageAutoConfigurati
 import dev.tronto.kitiler.spring.autoconfigure.utils.sortedByOrdered
 import dev.tronto.kitiler.stat.incoming.usecase.StatisticsUseCase
 import dev.tronto.kitiler.stat.outgoing.port.spi.ImageDataStatistics
-import dev.tronto.kitiler.stat.service.StatisticsAutoRescale
+import dev.tronto.kitiler.stat.service.StatisticsAutoAdjust
 import dev.tronto.kitiler.stat.service.StatisticsService
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.support.GenericBeanDefinition
@@ -44,5 +44,5 @@ class KitilerStatAutoConfiguration(applicationContext: GenericApplicationContext
     @Bean
     @Order(-1)
     @ConditionalOnBean(StatisticsUseCase::class)
-    fun statisticsAutoRescale(statisticsUseCase: StatisticsUseCase) = StatisticsAutoRescale(statisticsUseCase)
+    fun statisticsAutoRescale(statisticsUseCase: StatisticsUseCase) = StatisticsAutoAdjust(statisticsUseCase)
 }

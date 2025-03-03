@@ -8,6 +8,8 @@ class DefaultImageFormatRegistrar : ImageFormatRegistrar {
         ImageFormat.JPEG,
         ImageFormat.PNG,
         ImageFormat.NPY,
-        ImageFormat.NPZ
+        ImageFormat.NPZ,
+        ImageFormat.WEBP,
+        ImageFormat.JP2
     )
 }

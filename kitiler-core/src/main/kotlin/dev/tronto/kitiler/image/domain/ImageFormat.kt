@@ -40,4 +40,16 @@ interface ImageFormat {
         override val contentType: String = "application/x-npz"
         override fun toString(): String = name
     }
+
+    object WEBP : ImageFormat {
+        override val name: String = "webp"
+        override val contentType: String = "image/webp"
+        override fun toString(): String = name
+    }
+
+    object JP2 : ImageFormat {
+        override val name: String = "jp2"
+        override val contentType: String = "image/x-jp2"
+        override fun toString(): String = name
+    }
 }

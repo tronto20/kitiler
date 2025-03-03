@@ -14,14 +14,13 @@ import dev.tronto.kitiler.core.incoming.controller.option.getAll
 import dev.tronto.kitiler.core.incoming.controller.option.getOrNull
 import dev.tronto.kitiler.core.outgoing.adaptor.gdal.path.tryToGdalPath
 import dev.tronto.kitiler.core.outgoing.port.CRSFactory
+import dev.tronto.kitiler.core.utils.GdalInit
 import dev.tronto.kitiler.image.outgoing.adaptor.gdal.gdalWarpString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.gdal.gdal.Dataset
 import org.gdal.gdal.WarpOptions
 import org.gdal.gdal.gdal
 import org.gdal.gdalconst.gdalconst
-import org.gdal.ogr.ogr
-import org.gdal.osr.osr
 import java.util.*
 import kotlin.io.path.toPath
 
@@ -29,15 +28,6 @@ class GdalDatasetFactory(private val crsFactory: CRSFactory) {
     companion object {
         @JvmStatic
         private val logger = KotlinLogging.logger { }
-    }
-
-    private object GdalInit {
-        init {
-            gdal.AllRegister()
-            gdal.UseExceptions()
-            ogr.UseExceptions()
-            osr.UseExceptions()
-        }
     }
 
     private fun createVRT(
@@ -49,7 +39,11 @@ class GdalDatasetFactory(private val crsFactory: CRSFactory) {
         require(crsOption != null || noData != null)
 
         val resamplingAlgorithm = resamplingAlgorithmOption.algorithm
-        val memoryFile = "/vsimem/${rasterDataset.name}.vrt"
+
+        /**
+         *  /vsimem 은 모든 쓰레드에서 하나의 경로로 하나의 데이터셋을 공유할 수 있기에, 이름이 겹치는 일을 방지하기 위해 UUID 사용.
+         */
+        val memoryFile = "/vsimem/${UUID.randomUUID()}/${rasterDataset.name}.vrt"
         val warpOptions = mutableMapOf(
             "-of" to "VRT",
             "-r" to resamplingAlgorithm.gdalWarpString,
@@ -66,9 +60,8 @@ class GdalDatasetFactory(private val crsFactory: CRSFactory) {
         }
 
         val hasAlphaBand = (1..<rasterDataset.bandCount).reversed().any {
-            rasterDataset.dataset.GetRasterBand(it).use {
-                ColorInterpretation[it.GetColorInterpretation()] == ColorInterpretation.Alpha
-            }
+            val band = rasterDataset.dataset.GetRasterBand(it)
+            ColorInterpretation[band.GetColorInterpretation()] == ColorInterpretation.Alpha
         }
 
         if (hasAlphaBand) {
@@ -79,17 +72,12 @@ class GdalDatasetFactory(private val crsFactory: CRSFactory) {
             warpOptions.remove("-dstalpha")
         }
         val options = warpOptions.flatMap { listOf(it.key, it.value) }.filter { it.isNotBlank() }
-        val warpOption = WarpOptions(Vector(options))
-        val dataset = try {
+        val dataset = WarpOptions(Vector(options)).use {
             gdal.Warp(
                 memoryFile,
                 arrayOf(rasterDataset.dataset),
-                warpOption
+                it
             )
-        } finally {
-            kotlin.runCatching { warpOption.delete() }.onFailure {
-                logger.warn(it) { "cannot delete WarpOption." }
-            }
         }
         return GdalDataset(rasterDataset.name, dataset, memoryFile)
     }
@@ -99,9 +87,9 @@ class GdalDatasetFactory(private val crsFactory: CRSFactory) {
             .substringBefore('?')
             .substringBeforeLast('.')
         val dataset: Dataset = try {
-//            val dataset: Dataset? = gdal.Open(path, gdalconst.GA_ReadOnly)
-            gdal.OpenEx(path, gdalconst.OF_READONLY.or(gdalconst.OF_RASTER).toLong())!!
-        } catch (e: NullPointerException) {
+            val dataset: Dataset? = gdal.Open(path, gdalconst.GA_ReadOnly)
+            dataset!!
+        } catch (_: NullPointerException) {
             throw GdalDatasetOpenFailedException(
                 path,
                 RuntimeException(

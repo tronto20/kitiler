@@ -1,5 +1,5 @@
-dev.tronto.kitiler.image.outgoing.adaptor.imageio.NDArrayImageIOJpegRenderer
-dev.tronto.kitiler.image.outgoing.adaptor.imageio.NDArrayImageIOPNGRenderer
-dev.tronto.kitiler.image.outgoing.adaptor.multik.NDArrayNPYRenderer
-dev.tronto.kitiler.image.outgoing.adaptor.gdal.NDArrayGdalJpegRenderer
-dev.tronto.kitiler.image.outgoing.adaptor.gdal.NDArrayGdalPngRenderer
+dev.tronto.kitiler.image.outgoing.adaptor.multik.NPYNPZMultikRenderer
+dev.tronto.kitiler.image.outgoing.adaptor.gdal.JpegGdalRenderer
+dev.tronto.kitiler.image.outgoing.adaptor.gdal.PngGdalRenderer
+dev.tronto.kitiler.image.outgoing.adaptor.gdal.WebPGdalRenderer
+dev.tronto.kitiler.image.outgoing.adaptor.gdal.JP2GdalRenderer

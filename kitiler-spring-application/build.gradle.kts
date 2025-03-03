@@ -1,4 +1,5 @@
 import dev.tronto.kitiler.buildsrc.tasks.PathExec
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.springframework.boot.buildpack.platform.build.PullPolicy
 import org.springframework.boot.gradle.tasks.bundling.BootArchive
 import org.springframework.boot.gradle.tasks.bundling.DockerSpec.DockerRegistrySpec
@@ -71,6 +72,13 @@ val buildRunnerImageTask = tasks.register("buildRunnerImage", PathExec::class.ja
     val gdalVersion = libs.versions.gdal.get()
     args("--build-arg")
     args("GDAL_VERSION=${gdalVersion}")
+    args("--build-arg")
+    args("STACK_ID=io.buildpacks.stacks.noble.tiny")
+
+    if (DefaultNativePlatform.getCurrentArchitecture().isArm64) {
+        args("--build-arg")
+        args("JNI=/usr/lib/aarch64-linux-gnu/jni")
+    }
 }
 
 
@@ -87,6 +95,7 @@ if (properties["image.native.enabled"].toString().toBoolean()) {
 
             val taskEnv = (this.environment.orNull ?: emptyMap())
             this.environment.set(taskEnv + customEnvs)
+            buildpacks.set(buildpacks.getOrElse(emptyList()) + listOf("urn:cnb:builder:paketo-buildpacks/java-native-image"))
         }
     }
 }
@@ -122,7 +131,25 @@ tasks.bootBuildImage {
     (properties["image.push"] as? String?)?.let { publish.set(it.toBoolean()) }
     val envs = environment.get().toMutableMap()
     envs["BP_JVM_VERSION"] = jvmVersion.toString()
+    envs["BPE_DELIM_JAVA_TOOL_OPTIONS"] = " "
+    properties["POM_DEVELOPER_ID"]?.toString()?.let { envs["BP_OCI_AUTHORS"] = it }
+    properties["image.metadata.description"]?.toString()?.let { envs["BP_OCI_DESCRIPTION"] = it }
+    properties["image.metadata.documentation"]?.toString()?.let { envs["BP_OCI_DOCUMENTATION"] = it }
+    properties["POM_LICENSE_NAME"]?.toString()?.let { envs["BP_OCI_LICENSES"] = it }
+    properties["image.metadata.revision"]?.toString()?.let { envs["BP_OCI_REVISION"] = it }
+    properties["POM_URL"]?.toString()?.let {
+        envs["BP_OCI_URL"] = it
+        envs["BP_OCI_SOURCE"] = it
+    }
     environment.set(envs)
+    builder.set("paketobuildpacks/builder-noble-java-tiny:latest")
+    buildpacks.set(
+        buildpacks.getOrElse(emptyList()) +
+                listOf(
+                    "urn:cnb:builder:paketo-buildpacks/java",
+                    "docker://paketobuildpacks/image-labels:latest"
+                )
+    )
 }
 
 tasks.register("buildImage") {

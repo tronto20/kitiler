@@ -8,9 +8,7 @@ import dev.tronto.kitiler.image.domain.ImageData
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
-import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.D3Array
-import org.jetbrains.kotlinx.multik.ndarray.operations.mapMultiIndexed
 import org.jetbrains.kotlinx.multik.ndarray.operations.toDoubleArray
 import org.jetbrains.kotlinx.multik.ndarray.operations.toFloatArray
 import org.jetbrains.kotlinx.multik.ndarray.operations.toIntArray
@@ -25,7 +23,7 @@ import org.locationtech.jts.geom.Location
  */
 sealed class NDArrayImageData<T>(
     internal val data: D3Array<T>,
-    internal val mask: D2Array<Int>,
+    internal val valid: BooleanArray?,
     vararg options: OptionProvider<*>,
 ) : OptionContext by OptionContext.wrap(*options),
     ImageData where T : Number, T : Comparable<T> {
@@ -34,7 +32,7 @@ sealed class NDArrayImageData<T>(
         private val logger = KotlinLogging.logger { }
     }
 
-    final override val band
+    final override val bandCount
         get() = data.shape[0]
 
     final override val width
@@ -44,40 +42,32 @@ sealed class NDArrayImageData<T>(
         get() = data.shape[1]
 
     final override val masked: Boolean by lazy {
-        val maskArray = mask.toIntArray()
-        for (i in maskArray.indices) {
-            if (maskArray[i] == 0) {
-                return@lazy true
-            }
-        }
-        return@lazy false
+        valid?.any { !it } == true
     }
 
     init {
-        val maskShape = mask.shape
-        require(width == maskShape[1] && height == maskShape[0]) {
-            "data and mask shape must be equal. (data: ${data.shape.toList()}, mask: ${mask.shape.toList()})"
+        require(valid == null || (height * width) == valid.size) {
+            "data and mask shape must be equal. (data: ${data.shape.toList()}, mask: ${valid?.size})"
         }
     }
 
     abstract fun copy(
         data: D3Array<T> = this.data,
-        mask: D2Array<Int> = this.mask,
+        valid: BooleanArray? = this.valid,
         vararg options: OptionProvider<*> = this.getAllOptionProviders().toTypedArray(),
     ): NDArrayImageData<T>
 
     override fun mask(geom: Geometry): ImageData {
         val index = IndexedPointInAreaLocator(geom)
-        val mask = mask.mapMultiIndexed { (h, w), byte ->
-            if (byte == 0) {
-                byte
-            } else if (index.locate(Coordinate(w.toDouble(), h.toDouble())) == Location.EXTERIOR) {
-                0
-            } else {
-                1
+        val validArray = BooleanArray(height * width)
+        valid?.copyInto(validArray)
+        for (i in validArray.indices) {
+            val coord = Coordinate((i % width).toDouble(), (i / width).toDouble())
+            if (validArray[i] && index.locate(coord) == Location.EXTERIOR) {
+                validArray[i] = false
             }
         }
-        return copy(mask = mask)
+        return copy(valid = validArray)
     }
 
     abstract fun Number.asType(): T
@@ -105,7 +95,7 @@ sealed class NDArrayImageData<T>(
                     }
 
                     val rescaled = rescaleToInt(rangeFrom, rangeTo)
-                    IntImageData(rescaled, mask, dataType, *getAllOptionProviders().toTypedArray())
+                    IntImageData(rescaled, valid, dataType, bandInfo, *getAllOptionProviders().toTypedArray())
                 }
 
                 DataType.UInt32,
@@ -148,7 +138,8 @@ sealed class NDArrayImageData<T>(
                 val pixelSizePerBand = data.shape[1] * data.shape[2]
                 (0..<data.shape[0]).forEach { band ->
                     val from =
-                        rangeFrom.getOrElse(band) { rangeFrom[0] }.let { it.start.toLong()..it.endInclusive.toLong() }
+                        rangeFrom.getOrElse(band) { rangeFrom[0] }
+                            .let { it.start.toLong()..it.endInclusive.toLong() }
                     val to = rangeTo.getOrElse(band) { rangeTo[0] }
                     linearRescaleToInt(dataArray, pixelSizePerBand * band, pixelSizePerBand, from, to, targetArray)
                 }
@@ -163,7 +154,8 @@ sealed class NDArrayImageData<T>(
                 val pixelSizePerBand = data.shape[1] * data.shape[2]
                 (0..<data.shape[0]).forEach { band ->
                     val from =
-                        rangeFrom.getOrElse(band) { rangeFrom[0] }.let { it.start.toFloat()..it.endInclusive.toFloat() }
+                        rangeFrom.getOrElse(band) { rangeFrom[0] }
+                            .let { it.start.toFloat()..it.endInclusive.toFloat() }
                     val to = rangeTo.getOrElse(band) { rangeTo[0] }
                     linearRescaleToInt(dataArray, pixelSizePerBand * band, pixelSizePerBand, from, to, targetArray)
                 }
@@ -188,4 +180,6 @@ sealed class NDArrayImageData<T>(
 
             else -> throw UnsupportedOperationException("${this.dataType} is not supported.")
         }
+
+    override fun getValidArray(): BooleanArray? = valid
 }

@@ -6,7 +6,7 @@ import org.gdal.osr.osr
 import java.net.URI
 
 class SpatialReferenceCRS(val srs: SpatialReference, override val input: String) : CRS {
-    override val name: String = srs.GetName()
+    override val name: String? = srs.GetName()
     override val semiMajor: Double = srs.GetSemiMajor()
     override val semiMinor: Double = srs.GetSemiMinor()
     override val invertAxis: Boolean by lazy {
