@@ -31,7 +31,7 @@ class StatisticsService(
         statisticsOptions: OptionProvider<StatisticsOption>,
     ): Statistics {
         val percentileOption: PercentileOption = statisticsOptions.getOrNull()
-            ?: PercentileOption(listOf(Percentile(2), Percentile(98)))
+            ?: PercentileOption(listOf(Percentile(2.0), Percentile(98.0)))
 
         val preview = logger.logTrace("stat preview") { previewUseCase.preview(openOptions, imageOptions) }
         val stat = imageDataStatistics.find {

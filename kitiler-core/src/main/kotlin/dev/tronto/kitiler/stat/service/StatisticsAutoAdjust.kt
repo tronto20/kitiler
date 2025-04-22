@@ -45,7 +45,7 @@ class StatisticsAutoAdjust(private val statisticsUseCase: StatisticsUseCase = St
             .filterNot(ArgumentType<ImageSizeOption>())
             .plus(MaxSizeOption(1024))
 
-        val percentileRange = Percentile(2)..Percentile(98)
+        val percentileRange = Percentile(2.0)..Percentile(98.0)
         val statisticsOptions = OptionProvider.empty<StatisticsOption>() +
             PercentileOption(listOf(percentileRange.start, percentileRange.endInclusive))
 

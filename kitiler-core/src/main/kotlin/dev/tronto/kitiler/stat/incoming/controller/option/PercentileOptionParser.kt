@@ -21,7 +21,7 @@ class PercentileOptionParser : OptionParser<PercentileOption> {
         val percentiles = request.parameter(PARAM).flatMap {
             it.split(',')
         }.map {
-            it.toIntOrNull() ?: throw IllegalParameterException("$PARAM must be integer.")
+            it.toDoubleOrNull() ?: throw IllegalParameterException("$PARAM must be integer.")
         }
         return if (percentiles.isEmpty()) {
             null
