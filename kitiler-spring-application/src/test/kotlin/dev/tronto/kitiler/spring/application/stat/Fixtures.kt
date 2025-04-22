@@ -25,7 +25,7 @@ val testStatistics = Statistics(
             5,
             5,
             listOf(
-                BandStatistics.PercentileResult(Percentile(2), 2.0)
+                BandStatistics.PercentileResult(Percentile(2.0), 2.0)
             )
         )
     )
