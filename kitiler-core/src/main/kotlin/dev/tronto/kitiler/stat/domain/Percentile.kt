@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @JvmInline
-value class Percentile(val value: Int) : Comparable<Percentile> {
+value class Percentile(val value: Double) : Comparable<Percentile> {
 
     init {
         require(value >= 0) {
